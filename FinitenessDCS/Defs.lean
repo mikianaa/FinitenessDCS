@@ -19,6 +19,7 @@ precisely one modulus is repeated (occurring exactly `m` times).
 namespace DCS
 
 open Finset Nat
+open scoped ArithmeticFunction.sigma
 
 /-- A positive integer is supported on a set of primes `P` if all its prime factors lie in `P`.
     By convention, 1 is supported on any set. -/
@@ -27,9 +28,6 @@ def IsSupportedOn (s : ℕ) (P : Finset ℕ) : Prop :=
 
 instance (P : Finset ℕ) : DecidablePred (IsSupportedOn · P) := by
   intro s; unfold IsSupportedOn; exact Finset.decidableDforallFinset
-
-/-- Sum of divisors function σ(n) = ∑_{d | n} d -/
-def sigma (n : ℕ) : ℕ := (Nat.divisors n).sum id
 
 /-- A valid coset partition system with parameter `m`.
 

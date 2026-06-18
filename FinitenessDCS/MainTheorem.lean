@@ -1,5 +1,6 @@
 import Mathlib
 import FinitenessDCS.Defs
+import FinitenessDCS.DivisorSum
 
 /-!
 # Main Theorem: Finiteness of Valid Systems
@@ -25,33 +26,9 @@ sets P. The key lemmas are:
 namespace DCS
 
 open Finset Nat
+open scoped ArithmeticFunction.sigma
 
 variable {m : ℕ}
-
-/-! ### Auxiliary sigma lemmas -/
-
-lemma sigma_ge_self {n : ℕ} (hn : 0 < n) : n ≤ sigma n := by
-  unfold sigma
-  exact Finset.single_le_sum (f := id) (fun _ _ => Nat.zero_le _)
-    (Nat.mem_divisors_self n hn.ne')
-
-lemma sigma_one : sigma 1 = 1 := by native_decide
-
-lemma sigma_pos {n : ℕ} (hn : 0 < n) : 0 < sigma n :=
-  Nat.lt_of_lt_of_le hn (sigma_ge_self hn)
-
-/-! ### Proposition 3.1: Divisor-sum inequality -/
-
-/-- **Proposition 3.1**: For each C₀, there exists B depending only on C₀ such that
-    whenever N > 1 has largest prime p ≥ 3 and N ≤ σ(N/p) + C₀, then p ≤ B and N ≤ B.
-
-    The proof uses Mertens-type bounds on ∏_{q<p} q/(q-1). -/
-theorem divisor_sum_ineq (C₀ : ℕ) :
-    ∃ B : ℕ, ∀ (N p : ℕ), 1 < N → p.Prime → 3 ≤ p → p ∣ N →
-      (∀ q : ℕ, q.Prime → q ∣ N → q ≤ p) →
-      N ≤ sigma (N / p) + C₀ →
-      p ≤ B ∧ N ≤ B := by
-  sorry
 
 /-! ### Propositions 3.3/3.4 combined into Lemma 3.5
 
@@ -69,7 +46,7 @@ theorem bound_vh_general (C : ℕ) :
       ∀ (s₀ : ℕ), s₀ ∈ sys.S →
       -- The sum of sizes that divide s₀ but with strictly smaller "small part"
       -- is bounded by σ(s₀/p_max) + C where p_max is the largest prime of s₀
-      sys.sumDS s₀ ≤ sigma (s₀ / s₀.minFac) + C →
+      sys.sumDS s₀ ≤ σ 1 (s₀ / s₀.minFac) + C →
       s₀ ≤ B := by
   sorry
 
@@ -93,7 +70,8 @@ theorem proper_divisor_sum_bound (B_low : ℕ) :
 lemma sum_le_sigma_of_dvd (S : Finset ℕ) (M : ℕ)
     (hM : 0 < M)
     (h_dvd : ∀ s ∈ S, s ∣ M) :
-    S.sum id ≤ sigma M := by
+    S.sum id ≤ σ 1 M := by
+  rw [ArithmeticFunction.sigma_one_apply]
   exact Finset.sum_le_sum_of_subset
     (fun s hs => Nat.mem_divisors.mpr ⟨h_dvd s hs, hM.ne'⟩)
 
