@@ -1,0 +1,121 @@
+\documentclass[11pt,reqno]{amsart}
+
+% packages
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{mathtools}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+\title{A Divisibility Condition for Moduli in Disjoint Covering Systems with Precisely One Repeated Modulus}
+\author{Yu Hashimoto}
+\date{June 2026}
+
+% theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{question}[theorem]{Question}
+% \theoremstyle{example}
+% \newtheorem{example}[theorem]{Example}
+
+% macros
+\newcommand{\Zmod}[1]{\mathbb{Z}/#1\mathbb{Z}}
+
+% ind as operator
+\DeclareMathOperator{\ind}{index}
+
+% families of cosets
+\newcommand{\Cset}{\mathcal{C}}
+\newcommand{\Aset}{\mathcal{A}}
+\newcommand{\Lset}{\mathcal{L}}
+\newcommand{\Dset}{\mathcal{D}}
+
+% show only referenced equation numbers
+\mathtoolsset{showonlyrefs=true}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+In this note, we give a proof of the divisibility condition for moduli in a \emph{disjoint covering system} (DCS) with precisely one repeated modulus. This condition was assumed in the author's earlier paper \cite{Hashimoto}.
+In \cite{Hashimoto}, we assumed the general theorem on moduli in DCS which was proved by Porubsk\'y \cite{Porubsky} and the Berger, Felzenbaum, and Fraenkel's argument in \cite{BFF1988}. We give the alternative proof for completeness and Lean formalization. The essentially same approach was found in the literature in the form of a generating function \cite{NovakZnam} \cite{Porubsky}.
+
+\section{The proof}
+
+\begin{proposition}
+\label{prop:weak-completion-divisibility}
+Let \((a_i+n_i\mathbb{Z})_{i=1}^t\)
+be a DCS satisfying 
+\begin{equation}\label{eq:distinctas}
+n_1 < n_2 < \cdots < n_{t-m} < n_{t-m+1}=\cdots=n_t
+\qquad (m\ge 2).
+\end{equation}
+Then
+\[
+n_i \mid n_t
+\qquad
+(1\le i\le t).
+\]
+In particular,
+\[
+N:=\operatorname{lcm}(n_1,\dots,n_t) \mid n_t.
+\]
+\end{proposition}
+
+\begin{proof}
+Let $1 \le r \le t$ and let \(\zeta\) be a primitive \(n_r\)-th root of unity.
+For a DCS, we have the standard identity
+\[
+\sum_{x\in\Zmod N}\zeta^x
+=
+\sum_{k=1}^t
+\sum_{\substack{x\in\Zmod N\\x\equiv a_k\pmod{n_k}}}
+\zeta^x.
+\]
+since each $x$ is covered exactly once.
+For each progression,
+\[
+\sum_{\substack{
+  x \in \Zmod{N} \\
+  x \equiv a_k \pmod{n_k}
+}}
+\zeta^x
+=
+\zeta^{a_k} \sum_{j = 0}^{N/n_k - 1}(\zeta^{n_k})^{j}
+= 
+\begin{cases}
+  \frac{N}{n_k}\zeta^{a_k} & (n_r \mid n_k) \\
+  0 & (n_r \nmid n_k)
+\end{cases}
+.
+\]
+Hence 
+\[
+\sum_{k \colon n_r \mid n_k} \frac{N}{n_k}\zeta^{a_k}
+=
+0.
+\]
+Now suppose $n_i \nmid n_t$ for some $1 \le i < t$. Choose $n_r$ maximal, with respect to divisibility, among
+the moduli $n_j$ satisfying $n_j\nmid n_t$.
+It follows that $n_r \nmid n_k$ for all $k \neq r$. Indeed, if $n_r \mid n_k$ for some $k \neq r$, then $n_k \nmid n_t$ by the choice of $n_r$. Since $k \neq r$ and moduli smaller than $n_t$ are pairwise distinct, $n_r \mid n_k$ contradicts the maximality of $n_r$. Therefore, the above sum has only the $k = r$ term and 
+\[
+\frac{N}{n_r}\zeta^{a_r} = 0.
+\]
+This is a contradiction and hence completes the proof.
+\end{proof}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

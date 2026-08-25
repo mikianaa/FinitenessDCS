@@ -1,4 +1,5 @@
 import FinitenessDCS.MainTheorem
+import FinitenessDCS.DCSystem
 
 /-!
 # The main theorem in the DCS (disjoint covering system) setting
@@ -13,9 +14,10 @@ A *disjoint covering system* (DCS) is a finite family of arithmetic progressions
 `aᵢ + nᵢℤ ⊆ ℤ` such that every integer lies in **exactly one** of them.  The
 normalization `(eq:basicas)` says the minimum modulus is `≥ 3`, the largest
 modulus is repeated exactly `m` times, and all the smaller moduli are pairwise
-distinct.
+distinct.  `DCSystem`, `DCSystem.Basicas` and the divisibility condition
+`modulus_dvd_max` (`nᵢ ∣ n_t`) live in `FinitenessDCS.DCSystem`.
 
-The proof (developed in later steps) bridges to the coset-partition setting:
+The proof bridges to the coset-partition setting:
 reducing modulo `n := lcm(n₁,…,n_t)`, each progression `aᵢ + nᵢℤ` becomes a coset
 of `ℤ/nℤ` of size `n/nᵢ`, the `m` copies of the top modulus `n_t = n` become the
 `m` singleton cosets, and the result is a `DCS.ValidCosetPartition m`.  Then
@@ -27,66 +29,6 @@ namespace DCS
 
 open Finset
 
-/-- An arithmetic progression `{x : ℤ | x ≡ residue [ZMOD modulus]}`, stored by its
-    `modulus` and the canonical representative `residue` (intended to satisfy
-    `residue < modulus`; see `ArithProg.Valid`).  Two progressions are equal as
-    structures iff they are equal as subsets of `ℤ`. -/
-structure ArithProg where
-  /-- The common difference of the progression. -/
-  modulus : ℕ
-  /-- The canonical residue (representative in `[0, modulus)`). -/
-  residue : ℕ
-  deriving DecidableEq
-
-/-- A progression is *valid* when its modulus is positive and its stored residue is
-    the canonical representative in `[0, modulus)`. -/
-def ArithProg.Valid (ap : ArithProg) : Prop := 0 < ap.modulus ∧ ap.residue < ap.modulus
-
-/-- Membership of an integer `x` in the progression: `x ≡ residue (mod modulus)`. -/
-def ArithProg.Mem (ap : ArithProg) (x : ℤ) : Prop := (ap.modulus : ℤ) ∣ (x - ap.residue)
-
-/-- The progression as a subset of `ℤ`, i.e. `residue + modulus·ℤ`. -/
-def ArithProg.toSet (ap : ArithProg) : Set ℤ := {x | ap.Mem x}
-
-/-- A **disjoint covering system** of `ℤ`: a finite family of (valid) arithmetic
-    progressions such that every integer lies in exactly one of them. -/
-structure DCSystem where
-  /-- The progressions of the system. -/
-  progs : Finset ArithProg
-  /-- Each progression is valid (positive modulus, canonical residue). -/
-  valid : ∀ ap ∈ progs, ap.Valid
-  /-- Every integer lies in *exactly one* progression of the system. -/
-  covers : ∀ x : ℤ, ∃! ap, ap ∈ progs ∧ ap.Mem x
-
-/-- The normalization `(eq:basicas)` for a DCS with multiplicity `m`:
-
-* `2 ≤ m`;
-* every modulus is `≥ 3` (minimum modulus at least `3`);
-* there is a top modulus `M` that bounds all the others and is attained by exactly
-  `m` progressions (the largest modulus, repeated `m` times); and
-* the progressions with modulus `< M` have pairwise distinct moduli
-  (`n₁ < n₂ < ⋯ < n_{t-m}`). -/
-def DCSystem.Basicas (D : DCSystem) (m : ℕ) : Prop :=
-  2 ≤ m ∧
-  (∀ ap ∈ D.progs, 3 ≤ ap.modulus) ∧
-  ∃ M, (∀ ap ∈ D.progs, ap.modulus ≤ M) ∧
-       (D.progs.filter (fun ap => ap.modulus = M)).card = m ∧
-       (∀ ap₁ ∈ D.progs, ∀ ap₂ ∈ D.progs,
-          ap₁.modulus < M → ap₁.modulus = ap₂.modulus → ap₁ = ap₂)
-
-/-- **Berger–Felzenbaum–Fraenkel structural fact** (assumed as an axiom; see
-    [BFF]).  In a disjoint covering system whose largest modulus is `M` (i.e. `M`
-    bounds every modulus and is itself attained), every modulus divides `M`.  For a
-    DCS satisfying the normalization `(eq:basicas)` this is the cited fact
-    `nᵢ ∣ n_t` for all `1 ≤ i ≤ t`.
-
-    This is `assume`d rather than proved: it rests on separate work of Berger,
-    Felzenbaum, and Fraenkel. -/
-axiom modulus_dvd_max (D : DCSystem) {M : ℕ}
-    (hM : ∀ ap ∈ D.progs, ap.modulus ≤ M)
-    (hM_mem : ∃ ap ∈ D.progs, ap.modulus = M) :
-    ∀ ap ∈ D.progs, ap.modulus ∣ M
-
 /-- The largest modulus `M` of a disjoint covering system equals the lcm of all its
     moduli.  (`M` divides the lcm as one of the moduli; conversely every modulus
     divides `M` by `modulus_dvd_max`, so `M` is a common multiple and the lcm
@@ -94,14 +36,16 @@ axiom modulus_dvd_max (D : DCSystem) {M : ℕ}
     bridge to coset partitions. -/
 theorem max_modulus_eq_lcm (D : DCSystem) {M : ℕ}
     (hM : ∀ ap ∈ D.progs, ap.modulus ≤ M)
-    (hM_mem : ∃ ap ∈ D.progs, ap.modulus = M) :
+    (hM_mem : ∃ ap ∈ D.progs, ap.modulus = M)
+    (hdist : ∀ ap₁ ∈ D.progs, ∀ ap₂ ∈ D.progs,
+      ap₁.modulus < M → ap₁.modulus = ap₂.modulus → ap₁ = ap₂) :
     M = D.progs.lcm (fun ap => ap.modulus) := by
   apply Nat.dvd_antisymm
   · -- `M ∣ lcm`: `M` is one of the moduli.
     obtain ⟨ap, hap, hapM⟩ := hM_mem
     rw [← hapM]; exact Finset.dvd_lcm hap
-  · -- `lcm ∣ M`: every modulus divides `M` (the BFF axiom).
-    exact Finset.lcm_dvd (fun ap hap => modulus_dvd_max D hM hM_mem ap hap)
+  · -- `lcm ∣ M`: every modulus divides `M` (the divisibility condition).
+    exact Finset.lcm_dvd (fun ap hap => modulus_dvd_max D hM hdist ap hap)
 
 /-- For a DCS satisfying `Basicas m`, the witnessing top modulus `M` equals the lcm
     of all moduli.  This packages `max_modulus_eq_lcm` with the `Basicas` data
@@ -110,8 +54,8 @@ theorem basicas_top_eq_lcm {D : DCSystem} {m : ℕ} (hD : D.Basicas m) :
     ∃ M, (∀ ap ∈ D.progs, ap.modulus ≤ M) ∧
          (D.progs.filter (fun ap => ap.modulus = M)).card = m ∧
          M = D.progs.lcm (fun ap => ap.modulus) := by
-  obtain ⟨hm, _, M, hMle, hMcard, _⟩ := hD
-  refine ⟨M, hMle, hMcard, max_modulus_eq_lcm D hMle ?_⟩
+  obtain ⟨hm, _, M, hMle, hMcard, hMdist⟩ := hD
+  refine ⟨M, hMle, hMcard, max_modulus_eq_lcm D hMle ?_ hMdist⟩
   have hne : (D.progs.filter (fun ap => ap.modulus = M)).Nonempty := by
     rw [← Finset.card_pos, hMcard]; omega
   obtain ⟨ap, hap⟩ := hne
@@ -286,7 +230,7 @@ variable (D : DCSystem)
     (with `n = M`, the top modulus `= lcm`).  The `m` top-modulus progressions become
     the `m` size-1 singleton cosets (`hsingleton`); `min modulus ≥ 3` gives
     `size ≤ n/3` (`hsizes_le`); distinct smaller moduli give distinct non-singleton
-    sizes (`hdistinct`).  `M`'s divisibility of every modulus is the BFF axiom. -/
+    sizes (`hdistinct`).  `M`'s divisibility of every modulus is `modulus_dvd_max`. -/
 noncomputable def toValidCosetPartition {m : ℕ} (hD : D.Basicas m) : ValidCosetPartition m := by
   obtain ⟨hm, h3, hM⟩ := hD
   -- choose the top modulus `M` as data (noncomputably)
@@ -302,7 +246,7 @@ noncomputable def toValidCosetPartition {m : ℕ} (hD : D.Basicas m) : ValidCose
   have hM3 : 3 ≤ M := by
     obtain ⟨apM, hapM, hapM_eq⟩ := hM_mem; rw [← hapM_eq]; exact h3 apM hapM
   have hMpos : 0 < M := by omega
-  have hdvd : ∀ ap ∈ D.progs, ap.modulus ∣ M := modulus_dvd_max D hMle hM_mem
+  have hdvd : ∀ ap ∈ D.progs, ap.modulus ∣ M := modulus_dvd_max D hMle hMdist
   have hsize : ∀ ap ∈ D.progs, (ap.toCosetTotal M).size = M / ap.modulus := fun ap hap => by
     rw [ap.toCosetTotal_eq (hdvd ap hap) (D.valid ap hap).1]; rfl
   refine

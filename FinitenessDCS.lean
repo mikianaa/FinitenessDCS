@@ -2,4 +2,5 @@ import FinitenessDCS.Defs
 import FinitenessDCS.DivisorSum
 import FinitenessDCS.Parallelotope
 import FinitenessDCS.MainTheorem
+import FinitenessDCS.DCSystem
 import FinitenessDCS.MainDCS
