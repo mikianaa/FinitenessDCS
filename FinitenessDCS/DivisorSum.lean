@@ -33,10 +33,7 @@ def primorial (n : ℕ) : ℕ := (Finset.filter Nat.Prime (Finset.range (n + 1))
 /-- The product of (p-1) for primes p up to n -/
 def phiProd (n : ℕ) : ℕ := (Finset.filter Nat.Prime (Finset.range (n + 1))).prod (· - 1)
 
-/-
-Key bound: primorial(n) < n · phiProd(n) for n ≥ 4.
-    This is equivalent to ∏_{p ≤ n} p/(p-1) < n.
--/
+/-- Key bound: `primorial n < n · phiProd n` for `n ≥ 4`, i.e. `∏_{p ≤ n} p/(p-1) < n`. -/
 theorem primorial_lt_mul_phiProd (n : ℕ) (hn : 4 ≤ n) :
     primorial n < n * phiProd n := by
   induction n, hn using Nat.le_induction with
@@ -48,14 +45,12 @@ theorem primorial_lt_mul_phiProd (n : ℕ) (hn : 4 ≤ n) :
     · simp_all +decide [ Finset.prod_filter, Finset.prod_range_succ ];
       lia
 
-/-
-σ(M)/M < p - 1 when all prime factors of M are < p and p ≥ 5.
-    Stated multiplicatively: σ(M) * 1 < (p-1) * M.
--/
 -- The proof below was machine-generated and closes goals with ad-hoc `simp_all` calls;
 -- the flexible-tactic and multi-goal style linters are switched off for it only.
 set_option linter.flexible false in
 set_option linter.style.multiGoal false in
+/-- `σ(M)/M < p - 1` when all prime factors of `M` are `< p` and `p ≥ 5`,
+    stated multiplicatively as `σ(M) < (p - 1) · M`. -/
 theorem sigma_lt_mul (M p : ℕ) (hM : 0 < M) (hp : 5 ≤ p)
     (h_supp : ∀ q : ℕ, q.Prime → q ∣ M → q < p) :
     σ 1 M < (p - 1) * M := by

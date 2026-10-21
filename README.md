@@ -94,3 +94,7 @@ lake exe cache get   # download the prebuilt Mathlib
 lake build           # build the development (add --wfail to fail on linter warnings)
 lake build Lint      # run #lint and the axiom check
 ```
+
+The regular CI (`.github/workflows/lean_action_ci.yml`) runs exactly these two builds.
+API documentation (doc-gen4) is produced by the separate `API docs` workflow, on pushes to
+`main` or by hand, because documenting Mathlib along with the project takes hours.

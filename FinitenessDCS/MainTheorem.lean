@@ -20,7 +20,9 @@ sets P. The key lemmas are:
 2. **Valuation bounds** (Propositions 3.3/3.4, Lemma 3.5): the cell inequality
    reduces bounding a maximal valuation to the divisor-sum inequality.
 
-3. **Main induction** (Theorem 3.7): strong induction on |P| to bound sums.
+3. **Main induction** (Theorem 3.7): induction on the prime level `h`, with a
+   descending induction over `j ≤ h` for the valuations `d_j(𝒜_h)`, to bound
+   `∑_{𝒜_h}`.
 -/
 
 namespace DCS

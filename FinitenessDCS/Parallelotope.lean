@@ -1053,8 +1053,7 @@ taken from mathlib:
 * `finFunctionFinEquiv` — the base-`p` digit expansion `ℤ/p^kℤ ≃ (Fin k → Fin p)`;
 * `PrimeCoord.equivSigma` — reindexing `∏_p (Fin ν_p → Fin p)` to `∀ c, Fin c.prime`.
 
-Because it is assembled from `Equiv`s, `equivZMod` is a genuine bijection with no
-`sorry`. -/
+Because it is assembled from `Equiv`s, `equivZMod` is a bijection by construction. -/
 
 namespace DCS
 
@@ -1406,7 +1405,7 @@ def toFinsetZMod (X : PrimeCell n) [NeZero n] : Finset (ZMod n) :=
     (`PrimeParallelotope.ofZMod_bijective`), a prime cell contains exactly
     `X.size = ∏_{c ∈ freeIdx} c.prime` elements of `ZMod n`.
 
-    The combinatorial core is the *general*, sorry-free `Box.Cell.card_toFinset`;
+    The combinatorial core is the *general* `Box.Cell.card_toFinset`;
     here we merely transport it along the digit bijection. -/
 theorem toFinsetZMod_card (X : PrimeCell n) (hn : 0 < n) :
     haveI : NeZero n := ⟨hn.ne'⟩

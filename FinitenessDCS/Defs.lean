@@ -405,7 +405,7 @@ end ValidCosetPartition
 /-! ### Main Theorem Statement
 
 The main results — `ASet_combined_bound` (Theorem 3.7) and `finiteness_main`
-(Corollary 3.8) — are proved sorry-free in `MainTheorem.lean`, where the full
+(Corollary 3.8) — are proved in `MainTheorem.lean`, where the full
 proof machinery lives. -/
 
 end DCS
