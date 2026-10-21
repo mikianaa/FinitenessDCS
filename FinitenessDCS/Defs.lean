@@ -55,7 +55,7 @@ lemma bridge (P : CosetPartition n) (hn : 0 < n)
     induction l with
     | nil => simp
     | cons hd tl ih =>
-      by_cases h : hd.size = y <;> simp [List.count_cons, List.filter_cons, h, ih]
+      by_cases h : hd.size = y <;> simp [h, ih]
   ext x
   rw [Multiset.count_add, Multiset.count_replicate, Multiset.coe_count]
   have hSval : Multiset.count x P.distinctSizes.val = if x ∈ P.distinctSizes then 1 else 0 := by
@@ -126,7 +126,7 @@ lemma key_sum (P : CosetPartition n) (hn : 0 < n) (m : ℕ)
     intro l
     induction l with
     | nil => simp
-    | cons hd tl ih => by_cases h : hd.size ∣ X <;> simp [List.filter_cons, List.map_cons, h, ih]
+    | cons hd tl ih => by_cases h : hd.size ∣ X <;> simp [List.map_cons, h, ih]
   rw [hswap]
   have hcore : ((P.cosets.map Coset.size : Multiset ℕ).filter (· ∣ X)).sum
       = (P.distinctSizes.filter (· ∣ X)).sum id + m := by
@@ -232,8 +232,7 @@ lemma cell_ineq : ∀ s ∈ V.S,
     (V.S.filter (· ∣ s)).sum id + m ≥ (V.n / s).minFac * s := by
   intro s hs
   obtain ⟨K, hK, hKs⟩ := V.exists_coset_of_mem hs
-  have hK1 : 1 < K.size := by rw [hKs]; exact V.sizes_gt_one s hs
-  have hci := DCS.cell_inequality V.hn V.P K hK hK1
+  have hci := DCS.cell_inequality V.hn V.P K hK
   rw [hKs, key_sum V.P V.hn m V.hsingleton V.hdistinct s] at hci
   exact hci
 
@@ -246,8 +245,7 @@ lemma cell_ineq_two : ∀ s ∈ V.S,
     (V.S.filter (· ∣ s * p₁ ^ e₁)).sum id + m ≥ (q / p₁ ^ e₁).minFac * s := by
   intro s hs q p₁ e₁ htwo
   obtain ⟨K, hK, hKs⟩ := V.exists_coset_of_mem hs
-  have hK1 : 1 < K.size := by rw [hKs]; exact V.sizes_gt_one s hs
-  have hct := DCS.cell_inequality_two_level V.hn V.P K hK hK1
+  have hct := DCS.cell_inequality_two_level V.hn V.P K hK
   rw [hKs] at hct
   have hres := hct htwo
   rw [key_sum V.P V.hn m V.hsingleton V.hdistinct (s * p₁ ^ e₁)] at hres
@@ -362,10 +360,10 @@ lemma filter_dvd_split (S : Finset ℕ) (s : ℕ) (hs : s ∈ S) :
       | inl h => exact ⟨h ▸ hs, h ▸ dvd_refl s⟩
       | inr h => exact ⟨h.1, h.2.1⟩
   rw [h1, sum_insert]
-  simp [id]
-  simp only [mem_filter]
-  intro ⟨_, _, hne⟩
-  exact hne rfl
+  · simp [id]
+  · simp only [mem_filter]
+    intro ⟨_, _, hne⟩
+    exact hne rfl
 
 namespace ValidCosetPartition
 
@@ -406,7 +404,7 @@ end ValidCosetPartition
 
 /-! ### Main Theorem Statement
 
-The main results — `sumAP_bounded` (Theorem 3.7) and `finiteness_main`
+The main results — `ASet_combined_bound` (Theorem 3.7) and `finiteness_main`
 (Corollary 3.8) — are proved sorry-free in `MainTheorem.lean`, where the full
 proof machinery lives. -/
 

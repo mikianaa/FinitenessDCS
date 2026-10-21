@@ -41,9 +41,9 @@ the lemmas that need it.
 ## Main results
 
 * `DCS.Box.Parallelotope.card` — `|P(b)| = ∏ i, b i`.
-* `DCS.Box.Cell.card_toFinset` — `|X| = ∏_{i ∈ freeIdx} b i = X.size` (sorry-free).
+* `DCS.Box.Cell.card_toFinset` — `|X| = ∏_{i ∈ freeIdx} b i = X.size`.
 * `DCS.Box.cell_inequality` — the Berger–Felzenbaum–Fraenkel cell inequality
-  (statement only; the proof is the project's main remaining `TODO`).
+  (Proposition 2.1 of the paper), together with its corollaries.
 -/
 
 namespace DCS.Box
@@ -56,8 +56,7 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι] {b : ι → ℕ}
 
 /-- The (finite) parallelotope with coordinate set `ι` and side lengths `b`:
     the points whose `i`-th coordinate lies in `{0, …, b i - 1}`, i.e. the
-    dependent functions `i ↦ Fin (b i)`-/
-
+    dependent functions `i ↦ Fin (b i)`. -/
 abbrev Parallelotope (ι : Type*) (b : ι → ℕ) : Type _ := ∀ i, Fin (b i)
 
 instance Parallelotope.instFintype
@@ -237,7 +236,7 @@ def map (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) (X : Cell ι b) : Cell ι b wh
 /-- Membership is preserved by the coordinatewise relabelling: `y ∈ X` iff the
     relabelled point lies in the relabelled cell. -/
 lemma map_mem_iff
-    (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) (X : Cell ι b) (y : Parallelotope ι b) :
+    (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) {X : Cell ι b} {y : Parallelotope ι b} :
     (X.map e).Mem (Parallelotope.map e y) ↔ X.Mem y := by
   constructor
   · intro h i hi
@@ -250,9 +249,9 @@ lemma map_mem_iff
 
 /-- Inverse form of `map_mem_iff`. -/
 lemma mem_map_iff
-    (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) (X : Cell ι b) (y : Parallelotope ι b) :
+    {e : ∀ i : ι, Fin (b i) ≃ Fin (b i)} {X : Cell ι b} {y : Parallelotope ι b} :
     (X.map e).Mem y ↔ X.Mem ((Parallelotope.map e).symm y) := by
-  have h := map_mem_iff e X ((Parallelotope.map e).symm y)
+  have h := map_mem_iff e (X := X) (y := (Parallelotope.map e).symm y)
   rwa [Equiv.apply_symm_apply] at h
 
 /-- The cell relabelling is injective. -/
@@ -299,7 +298,7 @@ def map (P : CellPartition ι b) (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) :
 /-- A cell lies in the relabelled partition iff it is the relabelling of a cell
     of the original partition. -/
 lemma mem_map_cells_iff
-    (P : CellPartition ι b) (e : ∀ i : ι, Fin (b i) ≃ Fin (b i)) (Y : Cell ι b) :
+    {P : CellPartition ι b} {e : ∀ i : ι, Fin (b i) ≃ Fin (b i)} {Y : Cell ι b} :
     Y ∈ (P.map e).cells ↔ ∃ X ∈ P.cells, X.map e = Y := by
   simp only [CellPartition.map, Finset.mem_map, Function.Embedding.coeFn_mk]
 
@@ -324,7 +323,7 @@ namespace Cell
     (the free set is untouched). -/
 lemma map_freeIdx_subset_iff
     (e : ∀ i : ι, Fin (b i) ≃ Fin (b i))
-    (X : Cell ι b) (U : Finset ι) :
+    {X : Cell ι b} {U : Finset ι} :
     (X.map e).freeIdx ⊆ U ↔ X.freeIdx ⊆ U := by
   simp
 
@@ -346,9 +345,9 @@ lemma map_cell_mem
 /-- The good cells (`freeIdx ⊆ U`) of `P.map e` are exactly the relabellings of
     the good cells of `P`. -/
 lemma mem_map_filter_freeIdx_iff
-    (P : CellPartition ι b)
-    (e : ∀ i : ι, Fin (b i) ≃ Fin (b i))
-    (U : Finset ι) (Y : Cell ι b) :
+    {P : CellPartition ι b}
+    {e : ∀ i : ι, Fin (b i) ≃ Fin (b i)}
+    {U : Finset ι} {Y : Cell ι b} :
     Y ∈ (P.map e).cells.filter (fun Y => Y.freeIdx ⊆ U)
       ↔ ∃ X ∈ P.cells.filter (fun X => X.freeIdx ⊆ U), X.map e = Y := by
   rw [Finset.mem_filter, CellPartition.mem_map_cells_iff]
@@ -419,7 +418,7 @@ def normalizeEquiv
     (hb : ∀ i : ι, 2 ≤ b i) (X : Cell ι b) (R : Finset ι) :
     ∀ i : ι, Fin (b i) ≃ Fin (b i) :=
   fun i =>
-    if hi : i ∈ R then
+    if i ∈ R then
       Equiv.swap (X.fixedVals i) (finZero hb i)
     else
       Equiv.refl _
@@ -430,7 +429,7 @@ lemma normalize_fixedVals_eq_zero
     (hb : ∀ i : ι, 2 ≤ b i) (X : Cell ι b) (R : Finset ι) {i : ι} (hi : i ∈ R) :
     ((X.map (normalizeEquiv hb X R)).fixedVals i).val = 0 := by
   rw [Cell.map_fixedVals]
-  simp only [normalizeEquiv, dif_pos hi]
+  simp only [normalizeEquiv, if_pos hi]
   rw [Equiv.swap_apply_left]
   rfl
 
@@ -500,13 +499,11 @@ least `b₀ · |X|`.
     This is the position in which the deep counting argument (shrink + partition
     into `b₀` congruence classes) is cleanest to carry out.
 
-    The full `cell_inequality` will later be derived from this theorem by
-    applying it to the relabelled partition `P.map (normalizeEquiv hb X R)` (in
-    which the distinguished cell `X.map …` is zero on `R`, by
-    `normalize_fixedVals_eq_zero`) and then transporting the filtered sum back to
-    `P.cells` via `CellPartition.map_good_sum_size`.
-
-    The proof is left as `sorry` for now; only the statement is fixed here. -/
+    The full `cell_inequality` is derived from this theorem by applying it to
+    the relabelled partition `P.map (normalizeEquiv hb X R)` (in which the
+    distinguished cell `X.map …` is zero on `R`, by `normalize_fixedVals_eq_zero`)
+    and then transporting the filtered sum back to `P.cells` via
+    `CellPartition.map_good_sum_size`. -/
 theorem cell_inequality_normalized
     (hb : ∀ i : ι, 2 ≤ b i)
     (P : CellPartition ι b) (X : Cell ι b) (hX : X ∈ P.cells)
@@ -561,7 +558,7 @@ theorem cell_inequality_normalized
     exact hb₀_pos
   -- 7: hence `X` is untouched by the truncation.
   have hHatX : HatCell X = X.toFinset := by
-    show X.toFinset ∩ Shrunk = X.toFinset
+    change X.toFinset ∩ Shrunk = X.toFinset
     exact Finset.inter_eq_left.mpr hX_sub
   -- 8: `|HatCell X| = X.size` (the full cell cardinality).
   have hHatX_card : (HatCell X).card = X.size := by
@@ -699,7 +696,7 @@ theorem cell_inequality_normalized
       · exact Finset.sum_congr rfl hrest
     have hsum2 : (∑ i ∈ R, (y i).val) = (y c).val + ∑ i ∈ R.erase c, (y i).val :=
       (Finset.add_sum_erase R (fun i => (y i).val) hc).symm
-    show (∑ i ∈ R, ((shift c hc δ y) i).val) % b₀
+    change (∑ i ∈ R, ((shift c hc δ y) i).val) % b₀
         = ((∑ i ∈ R, (y i).val) % b₀ + δ) % b₀
     rw [hsum, hsum2, Nat.mod_add_mod, Nat.mod_add_mod]
     congr 1
@@ -824,7 +821,7 @@ theorem cell_inequality_normalized
       intro i hi
       have hyi : y i = X.fixedVals i := hy i (hR_fixed_X i hi)
       rw [hyi]; exact hX_zero i hi
-    show (∑ i ∈ R, (y i).val) % b₀ = 0
+    change (∑ i ∈ R, (y i).val) % b₀ = 0
     rw [hsum0]; exact Nat.zero_mod b₀
   have hX_sub_G0 : X.toFinset ⊆ G c0 := by
     intro y hy
@@ -1068,9 +1065,13 @@ variable {n : ℕ}
 /-- A coordinate in the parallelotope: a prime factor `p` of `n` together
     with an index `k ∈ {0, ..., ν_p(n) - 1}`. -/
 structure PrimeCoord (n : ℕ) where
+  /-- The prime `p`. -/
   prime : ℕ
+  /-- `p` is a prime factor of `n`. -/
   isPrimeFactor : prime ∈ n.primeFactors
+  /-- The digit position `k`. -/
   index : ℕ
+  /-- `k < ν_p(n)`. -/
   index_lt : index < n.factorization prime
 
 namespace PrimeCoord
@@ -1301,9 +1302,13 @@ theorem PrimeParallelotope.ofZMod_bijective (n : ℕ) (hn : 0 < n) :
     It represents the set {a, a+d, a+2d, ..., a+(n/d-1)d} mod n,
     which has n/d elements. -/
 structure Coset (n : ℕ) where
+  /-- A representative of the coset. -/
   residue : ZMod n
+  /-- The modulus `d`: the coset is `residue + d·(ℤ/nℤ)`. -/
   modulus : ℕ
+  /-- The modulus divides `n`. -/
   modulus_dvd : modulus ∣ n
+  /-- The modulus is positive. -/
   modulus_pos : 0 < modulus
 
 /-- The size of a coset -/
@@ -1347,7 +1352,9 @@ lemma Coset.residue_mem {n : ℕ} (K : Coset n) : K.residue ∈ K :=
     - `cover`: each element of ℤ/nℤ lies in exactly one coset (uniqueness of value)
     - `cosets_nodup`: distinct list entries (rules out the same coset appearing twice) -/
 structure CosetPartition (n : ℕ) where
+  /-- The cosets of the partition. -/
   cosets : List (Coset n)
+  /-- The sizes of the cosets add up to `n`. -/
   partition : (cosets.map Coset.size).sum = n
   /-- Each `x : ZMod n` is in *exactly one* coset of the partition. -/
   cover : ∀ x : ZMod n, ∃! K : Coset n, K ∈ cosets ∧ x ∈ K
@@ -1533,7 +1540,7 @@ lemma factorization_modulus_eq_zero (K : Coset n) (hn : 0 < n) {p : ℕ}
 
 /-- **Key correspondence**: `K'.toCell.freeIdx ⊆ K.toCell.freeIdx ↔ K'.size ∣ K.size`.
     Divisibility of cell sizes corresponds to subset of free coordinate sets. -/
-lemma toCell_freeIdx_subset_iff (K K' : Coset n) (hn : 0 < n) :
+lemma toCell_freeIdx_subset_iff {K K' : Coset n} (hn : 0 < n) :
     K'.toCell.freeIdx ⊆ K.toCell.freeIdx ↔ K'.size ∣ K.size := by
   -- The pivot: K'.size ∣ K.size ↔ K.modulus ∣ K'.modulus.
   have h_size_iff : K'.size ∣ K.size ↔ K.modulus ∣ K'.modulus := by
@@ -1592,7 +1599,7 @@ lemma toCell_freeIdx_subset_iff (K K' : Coset n) (hn : 0 < n) :
 
 /-- Coset membership in terms of `val`s: `x ∈ K` iff
     `x.val ≡ K.residue.val [MOD K.modulus]`. -/
-lemma mem_iff_val_modEq [NeZero n] (K : Coset n) (x : ZMod n) :
+lemma mem_iff_val_modEq [NeZero n] {K : Coset n} {x : ZMod n} :
     x ∈ K ↔ x.val ≡ K.residue.val [MOD K.modulus] := by
   haveI : NeZero K.modulus := ⟨K.modulus_pos.ne'⟩
   constructor
@@ -1624,7 +1631,7 @@ lemma mem_iff_val_modEq [NeZero n] (K : Coset n) (x : ZMod n) :
 /-- Membership of `ofZMod x` in `K.toCell`, unfolded: the digits of `x` agree
     with those of `K.residue` at every coordinate `c` with
     `c.index < v_p(K.modulus)`. -/
-lemma mem_toCell_iff_digits (K : Coset n) (x : ZMod n) :
+lemma mem_toCell_iff_digits {K : Coset n} {x : ZMod n} :
     K.toCell.Mem (PrimeParallelotope.ofZMod x) ↔
       ∀ c : PrimeCoord n, c.index < K.modulus.factorization c.prime →
         c.digit x = c.digit K.residue := by
@@ -1639,10 +1646,10 @@ lemma mem_toCell_iff_digits (K : Coset n) (x : ZMod n) :
 
 /-- **Coset ↔ cell correspondence**: `x` lies in the coset `K` iff its
     parallelotope point `ofZMod x` lies in the cell `K.toCell`. -/
-theorem mem_toCell_iff [NeZero n] (K : Coset n) (x : ZMod n) :
+theorem mem_toCell_iff [NeZero n] {K : Coset n} {x : ZMod n} :
     K.toCell.Mem (PrimeParallelotope.ofZMod x) ↔ x ∈ K := by
   have hn : 0 < n := Nat.pos_of_ne_zero (NeZero.ne n)
-  rw [K.mem_toCell_iff_digits, K.mem_iff_val_modEq]
+  rw [mem_toCell_iff_digits, mem_iff_val_modEq]
   constructor
   · -- digits agree below `v_p(K.modulus)` ⟹ congruence mod each `p^{v_p}` ⟹ mod `K.modulus`
     intro h
@@ -1719,7 +1726,7 @@ def CosetPartition.toCellPartition [NeZero n] (P : CosetPartition n) :
     and the divisibility ↔ inclusion correspondence
     (`toCell_freeIdx_subset_iff`). -/
 theorem cell_inequality (hn : 0 < n) (P : CosetPartition n)
-    (K : Coset n) (hK : K ∈ P.cosets) (hK_gt : 1 < K.size) :
+    (K : Coset n) (hK : K ∈ P.cosets) :
     ((P.cosets.filter (fun K' => K'.size ∣ K.size)).map Coset.size).sum
       ≥ (n / K.size).minFac * K.size := by
   haveI : NeZero n := ⟨hn.ne'⟩
@@ -1740,7 +1747,7 @@ theorem cell_inequality (hn : 0 < n) (P : CosetPartition n)
       rw [Finset.mem_sdiff]
       refine ⟨Finset.mem_univ _, ?_⟩
       rw [Coset.mem_toCell_freeIdx]
-      show ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
+      change ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
       have := hmf_prime.factorization_pos_of_dvd K.modulus_pos.ne' hmf_dvd_mod
       omega
     have hR : (Finset.univ \ K.toCell.freeIdx).Nonempty := ⟨c0, hc0_fixed⟩
@@ -1794,7 +1801,7 @@ theorem cell_inequality (hn : 0 < n) (P : CosetPartition n)
       intro K' _
       simp only [Function.comp_apply]
       rw [Coset.toCell_size K' hn]
-      exact if_congr (Coset.toCell_freeIdx_subset_iff K K' hn) rfl rfl
+      exact if_congr (Coset.toCell_freeIdx_subset_iff (K := K) (K' := K') hn) rfl rfl
     have key2 : K.modulus.minFac * K.toCell.size ≤
         ∑ Xⱼ ∈ (P.cosets.map Coset.toCell).toFinset.filter
           (fun Xⱼ => Xⱼ.freeIdx ⊆ K.toCell.freeIdx), Xⱼ.size := key
@@ -1831,7 +1838,7 @@ lemma Coset.toCell_inf'_prime (K : Coset n) (hn : 0 < n) (hmod : 1 < K.modulus)
     rw [Finset.mem_sdiff]
     refine ⟨Finset.mem_univ _, ?_⟩
     rw [Coset.mem_toCell_freeIdx]
-    show ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
+    change ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
     have := hmf_prime.factorization_pos_of_dvd K.modulus_pos.ne' hmf_dvd_mod
     omega
   apply le_antisymm
@@ -1859,7 +1866,7 @@ lemma Coset.toCell_fixed_nonempty (K : Coset n) (hn : 0 < n) (hmod : 1 < K.modul
   rw [Finset.mem_sdiff]
   refine ⟨Finset.mem_univ _, ?_⟩
   rw [Coset.mem_toCell_freeIdx]
-  show ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
+  change ¬ (K.modulus.factorization (K.modulus.minFac) ≤ 0)
   have := hmf_prime.factorization_pos_of_dvd K.modulus_pos.ne' hmf_dvd_mod
   omega
 
@@ -1889,7 +1896,7 @@ lemma CosetPartition.toCell_sum_eq [NeZero n] (P : CosetPartition n) (hn : 0 < n
     induction l with
     | nil => simp
     | cons hd tl ih => by_cases h : hd.size ∣ K₀.size <;> simp [h, ih]
-  show (∑ Xⱼ ∈ (P.cosets.map Coset.toCell).toFinset.filter
+  change (∑ Xⱼ ∈ (P.cosets.map Coset.toCell).toFinset.filter
       (fun Xⱼ => Xⱼ.freeIdx ⊆ K₀.toCell.freeIdx), Xⱼ.size) = _
   rw [Finset.sum_filter, List.sum_toFinset _ hnodup, List.map_map, hfiltersum P.cosets]
   apply congrArg List.sum
@@ -1897,7 +1904,7 @@ lemma CosetPartition.toCell_sum_eq [NeZero n] (P : CosetPartition n) (hn : 0 < n
   intro K' _
   simp only [Function.comp_apply]
   rw [Coset.toCell_size K' hn]
-  exact if_congr (Coset.toCell_freeIdx_subset_iff K₀ K' hn) rfl rfl
+  exact if_congr (Coset.toCell_freeIdx_subset_iff (K := K₀) (K' := K') hn) rfl rfl
 
 /-- **Two-level coset cell inequality** (`cor:coset-twolevel`).
 
@@ -1912,7 +1919,7 @@ lemma CosetPartition.toCell_sum_eq [NeZero n] (P : CosetPartition n) (hn : 0 < n
     `K.modulus / p₁^{e₁} = ordCompl[p₁] K.modulus`, whence `b₀ = minFac(K''.modulus) = p₂`
     and the resulting sum transports to cosets with `|K_i| ∣ |K''| = |K|·p₁^{e₁}`. -/
 theorem cell_inequality_two_level (hn : 0 < n) (P : CosetPartition n)
-    (K : Coset n) (hK : K ∈ P.cosets) (hK_gt : 1 < K.size) :
+    (K : Coset n) (hK : K ∈ P.cosets) :
     let q := n / K.size
     let p₁ := q.minFac
     let e₁ := q.factorization p₁
@@ -1942,26 +1949,29 @@ theorem cell_inequality_two_level (hn : 0 < n) (P : CosetPartition n)
   have hfree : K''.toCell.freeIdx = K.toCell.freeIdx ∪ F₁ := by
     ext c
     rw [Coset.mem_toCell_freeIdx]
-    show (q / p₁ ^ e₁).factorization c.prime ≤ c.index ↔ _
+    change (q / p₁ ^ e₁).factorization c.prime ≤ c.index ↔ _
     rw [hfact c.prime]
     simp only [F₁, Finset.mem_union, Finset.mem_filter, Finset.mem_sdiff,
                Finset.mem_univ, true_and, Coset.mem_toCell_freeIdx]
-    by_cases hcp : c.prime = p₁ <;> simp [hcp] <;> omega
+    by_cases hcp : c.prime = p₁
+    · simp [hcp]
+      omega
+    · simp [hcp]
   -- `|K''| = |K| · p₁^{e₁}`.
   have hKsize_q : K.size * q = n := by
-    rw [hq]; show n / K.modulus * K.modulus = n; exact Nat.div_mul_cancel K.modulus_dvd
+    rw [hq]; change n / K.modulus * K.modulus = n; exact Nat.div_mul_cancel K.modulus_dvd
   have hK''size : K''.size = K.size * p₁ ^ e₁ := by
     have hmul : (K.size * p₁ ^ e₁) * (q / p₁ ^ e₁) = n := by
       rw [Nat.mul_assoc, Nat.mul_comm (p₁ ^ e₁) (q / p₁ ^ e₁),
           Nat.div_mul_cancel hpe_dvd_q, hKsize_q]
-    show n / (q / p₁ ^ e₁) = K.size * p₁ ^ e₁
+    change n / (q / p₁ ^ e₁) = K.size * p₁ ^ e₁
     exact Nat.div_eq_of_eq_mul_left hm'_pos hmul.symm
   have hR'' : (Finset.univ \ K''.toCell.freeIdx).Nonempty :=
     Coset.toCell_fixed_nonempty K'' hn htwo
   have hR : (Finset.univ \ (K.toCell.freeIdx ∪ F₁)).Nonempty := by rw [← hfree]; exact hR''
   have hb₀ : (q / p₁ ^ e₁).minFac
       = (Finset.univ \ (K.toCell.freeIdx ∪ F₁)).inf' hR (fun c => c.prime) := by
-    show K''.modulus.minFac = _
+    change K''.modulus.minFac = _
     rw [← Coset.toCell_inf'_prime K'' hn htwo hR'']
     have h₁ : Finset.univ \ K''.toCell.freeIdx
         = Finset.univ \ (K.toCell.freeIdx ∪ F₁) := by rw [hfree]

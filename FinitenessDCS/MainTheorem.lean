@@ -57,8 +57,9 @@ namespace ValidCosetPartition
 
 variable (V : ValidCosetPartition m) {s Q : ℕ}
 
+variable {V} in
 /-- Membership in `ℒ_h(Q)` unfolds to: a size in `S` whose large part `π_h` is `Q`. -/
-lemma mem_LSet_iff (h : ℕ) :
+lemma mem_LSet_iff {h : ℕ} :
     s ∈ V.LSet h Q ↔ s ∈ V.S ∧ V.largePart h s = Q := by
   simp [LSet]
 
@@ -79,7 +80,7 @@ lemma largePart_dvd (h : ℕ) (hs : s ≠ 0) : V.largePart h s ∣ s := by
     the "small part" supported on `{p₁,…,p_h}`. -/
 lemma eq_div_mul_of_mem_LSet (h : ℕ) (hs : s ∈ V.LSet h Q) :
     s = (s / Q) * Q := by
-  rw [V.mem_LSet_iff] at hs
+  rw [mem_LSet_iff] at hs
   obtain ⟨hsS, hlarge⟩ := hs
   have hs0 : s ≠ 0 := (V.sizes_pos s hsS).ne'
   have hdvd : Q ∣ s := hlarge ▸ V.largePart_dvd h hs0
@@ -121,7 +122,7 @@ lemma smallPrimes_one (hp : V.pOrd 1 = 2) : V.smallPrimes 1 = {2} := by
     `ν₂` is injective on `ℒ₁(Q)`, which replaces the same-valuation shortcut. -/
 lemma eq_two_pow_mul_of_mem_LSet_one (hp : V.pOrd 1 = 2) (hs : s ∈ V.LSet 1 Q) :
     s = 2 ^ s.factorization 2 * Q := by
-  rw [V.mem_LSet_iff] at hs
+  rw [mem_LSet_iff] at hs
   obtain ⟨hsS, hlarge⟩ := hs
   have hs0 : s ≠ 0 := (V.sizes_pos s hsS).ne'
   have hfull : ∏ q ∈ s.primeFactors, q ^ s.factorization q = s := by
@@ -254,7 +255,7 @@ lemma sum_properTail_le (h : ℕ) (hQ : 1 ≤ Q) :
     simp only [Function.onFun]
     rw [Finset.disjoint_left]
     intro t hta htb
-    rw [V.mem_LSet_iff] at hta htb
+    rw [mem_LSet_iff] at hta htb
     exact hab (hta.2.symm.trans htb.2)
   rw [← Finset.sum_biUnion hdisj]
   apply Finset.sum_le_sum_of_subset
@@ -265,7 +266,7 @@ lemma sum_properTail_le (h : ℕ) (hQ : 1 ≤ Q) :
     rw [Nat.mem_properDivisors]
     exact ⟨htdvd, lt_of_le_of_ne (Nat.le_of_dvd (by omega) htdvd) htne⟩
   rw [Finset.mem_biUnion]
-  exact ⟨V.largePart h t, hpd, (V.mem_LSet_iff h).mpr ⟨htS, rfl⟩⟩
+  exact ⟨V.largePart h t, hpd, mem_LSet_iff.mpr ⟨htS, rfl⟩⟩
 
 /-- The combined upper bound on `W = {t ∈ S : π₁(t) ∣ Q}` used in every case of
     Piece 5: splitting `W` by `π₁(t) = Q` gives `ℒ₁(Q)` (Piece 3) plus the proper
@@ -301,8 +302,8 @@ The factor `3` is produced one of three ways, by case-splitting on `q = n/s₀`:
 lemma three_mul_s₀_le (hp : V.pOrd 1 = 2) (hQ : 1 ≤ Q) (hQodd : ¬ 2 ∣ Q)
     (hs₀ : s₀ ∈ V.LSet 1 Q) :
     3 * s₀ ≤ (∑ t ∈ V.S.filter (fun t => V.largePart 1 t ∣ Q), t) + m := by
-  have hs₀S : s₀ ∈ V.S := ((V.mem_LSet_iff 1).mp hs₀).1
-  have hπ : V.largePart 1 s₀ = Q := ((V.mem_LSet_iff 1).mp hs₀).2
+  have hs₀S : s₀ ∈ V.S := (mem_LSet_iff.mp hs₀).1
+  have hπ : V.largePart 1 s₀ = Q := (mem_LSet_iff.mp hs₀).2
   have hs₀0 : s₀ ≠ 0 := (V.sizes_pos s₀ hs₀S).ne'
   have hbridge : s₀ = 2 ^ s₀.factorization 2 * Q := V.eq_two_pow_mul_of_mem_LSet_one hp hs₀
   -- Any divisor set whose target has large part dividing `Q` sits inside `W`.
@@ -398,6 +399,7 @@ prime divisor of `n`; with `1 ≤ h` it lies in `{p₁,…,p_h}` and dominates i
 
 variable {h : ℕ}
 
+variable {V} in
 /-- `x` is in `primeList` iff it is a prime factor of `n`. -/
 lemma mem_primeList {x : ℕ} : x ∈ V.primeList ↔ x ∈ V.n.primeFactors := by
   rw [show V.primeList = V.n.primeFactors.sort (· ≤ ·) from rfl, Finset.mem_sort]
@@ -421,7 +423,7 @@ lemma pOrd_eq_getElem (hh : 2 ≤ V.pOrd h) :
 
 /-- `p_h` is a prime factor of `n` (when `p_h ≥ 2`). -/
 lemma pOrd_mem_primeFactors (hh : 2 ≤ V.pOrd h) : V.pOrd h ∈ V.n.primeFactors := by
-  rw [← V.mem_primeList, V.pOrd_eq_getElem hh]
+  rw [← mem_primeList, V.pOrd_eq_getElem hh]
   exact List.getElem_mem _
 
 /-- `p_h` is prime (when `p_h ≥ 2`). -/
@@ -459,7 +461,7 @@ lemma smallPrimes_le_pOrd (hh1 : 1 ≤ h) (hh : 2 ≤ V.pOrd h) :
 lemma smallPrimes_subset_primeFactors : V.smallPrimes h ⊆ V.n.primeFactors := by
   intro q hq
   rw [show V.smallPrimes h = (V.primeList.take h).toFinset from rfl, List.mem_toFinset] at hq
-  rw [← V.mem_primeList]
+  rw [← mem_primeList]
   exact List.mem_of_mem_take hq
 
 /-- `p_h = 2` forces `h = 1` (2 is the smallest prime, so it sits at index 0). -/
@@ -469,7 +471,7 @@ lemma eq_one_of_pOrd_eq_two (hh1 : 1 ≤ h) (hph : V.pOrd h = 2) : h = 1 := by
   have hr : h - 1 < V.primeList.length := V.pOrd_range h2
   have hr0 : 0 < V.primeList.length := by omega
   have hp0_prime : V.primeList[0].Prime :=
-    Nat.prime_of_mem_primeFactors (V.mem_primeList.mp (List.getElem_mem hr0))
+    Nat.prime_of_mem_primeFactors (mem_primeList.mp (List.getElem_mem hr0))
   have hlt : V.primeList[0] < V.primeList[h - 1] :=
     (V.primeList_sortedLT.getElem_lt_getElem_iff).mpr (by omega)
   rw [← V.pOrd_eq_getElem h2, hph] at hlt
@@ -504,7 +506,7 @@ lemma exists_divisionMinimal_maximal (h : ℕ) (hNE : (V.LSet h Q).Nonempty) :
   have hs'T : s' ∈ (V.LSet h Q).filter (fun s => s.factorization (V.pOrd h) = d) :=
     Finset.mem_filter.mpr ⟨hs'L, hs'd⟩
   have h1 : s₀ ≤ s' := Finset.min'_le _ s' hs'T
-  have hs₀pos : 0 < s₀ := V.sizes_pos _ ((V.mem_LSet_iff h).mp hmin.1).1
+  have hs₀pos : 0 < s₀ := V.sizes_pos _ (mem_LSet_iff.mp hmin.1).1
   have h2 : s' ≤ s₀ := Nat.le_of_dvd hs₀pos hdvd
   omega
 
@@ -524,7 +526,7 @@ lemma NK_structure (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h)
     s₀ = (s₀ / Q) * Q ∧
     (s₀ / Q).factorization (V.pOrd h) = s₀.factorization (V.pOrd h) ∧
     (∀ q : ℕ, q.Prime → q ∣ (s₀ / Q) → q ≤ V.pOrd h) := by
-  have hmem := (V.mem_LSet_iff h).mp hs₀
+  have hmem := mem_LSet_iff.mp hs₀
   have hs₀S : s₀ ∈ V.S := hmem.1
   have hπ : V.largePart h s₀ = Q := hmem.2
   have hs₀0 : s₀ ≠ 0 := (V.sizes_pos s₀ hs₀S).ne'
@@ -602,7 +604,7 @@ lemma sum_DS_LSet_le (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h)
       ≤ Q * σ 1 ((s₀ / Q) / V.pOrd h) := by
   obtain ⟨hNK, hνNK, _⟩ := V.NK_structure h hh1 hph hs₀ hQ hsupp
   have hQ0 : Q ≠ 0 := by omega
-  have hmem := (V.mem_LSet_iff h).mp hs₀
+  have hmem := mem_LSet_iff.mp hs₀
   have hs₀0 : s₀ ≠ 0 := (V.sizes_pos s₀ hmem.1).ne'
   have hQdvd : Q ∣ s₀ := by rw [← hmem.2]; exact V.largePart_dvd h hs₀0
   have hpQ : ¬ V.pOrd h ∣ Q := by
@@ -623,7 +625,7 @@ lemma sum_DS_LSet_le (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h)
     intro t ht
     rw [hDdef, Finset.mem_filter] at ht
     obtain ⟨htL, htdvd, htne⟩ := ht
-    have htmem := (V.mem_LSet_iff h).mp htL
+    have htmem := mem_LSet_iff.mp htL
     have ht0 : t ≠ 0 := (V.sizes_pos t htmem.1).ne'
     have hQt : Q ∣ t := by rw [← htmem.2]; exact V.largePart_dvd h ht0
     have hteq : t = (t / Q) * Q := V.eq_div_mul_of_mem_LSet h htL
@@ -684,7 +686,7 @@ lemma core_inequality (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h)
     (hd1 : 1 ≤ s₀.factorization (V.pOrd h)) (C : ℕ)
     (htail : (∑ Q' ∈ Q.properDivisors, (V.LSet h Q').sum id) ≤ C) :
     s₀ / Q ≤ σ 1 ((s₀ / Q) / V.pOrd h) + (C + m) := by
-  have hmem := (V.mem_LSet_iff h).mp hs₀
+  have hmem := mem_LSet_iff.mp hs₀
   have hs₀S : s₀ ∈ V.S := hmem.1
   have hπ : V.largePart h s₀ = Q := hmem.2
   have hs₀0 : s₀ ≠ 0 := (V.sizes_pos s₀ hs₀S).ne'
@@ -803,8 +805,8 @@ lemma sum_LSet_layer_le (k : ℕ) (hph : 2 ≤ V.pOrd (k + 1)) (Q' : ℕ) :
   intro L hL
   rw [Finset.mem_filter] at hL
   obtain ⟨hLmem, hLe⟩ := hL
-  rw [V.mem_LSet_iff] at hLmem
-  rw [V.mem_LSet_iff]
+  rw [mem_LSet_iff] at hLmem
+  rw [mem_LSet_iff]
   refine ⟨hLmem.1, ?_⟩
   rw [V.largePart_pred k hph L, hLmem.2, hLe]
   ring
@@ -818,7 +820,7 @@ At level `0` the large part `π_0` is the whole number (`smallPrimes 0 = ∅`), 
 lemma sum_LSet_zero_le (Q' : ℕ) : (V.LSet 0 Q').sum id ≤ Q' := by
   have hsub : V.LSet 0 Q' ⊆ {Q'} := by
     intro s hs
-    rw [V.mem_LSet_iff] at hs
+    rw [mem_LSet_iff] at hs
     obtain ⟨hsS, hlp⟩ := hs
     have hs0 : s ≠ 0 := (V.sizes_pos s hsS).ne'
     have hlp0 : V.largePart 0 s = s := by
@@ -871,7 +873,7 @@ lemma smallPrimes_eq_of_pOrd_lt (k : ℕ) (h : V.pOrd (k + 1) < 2) :
     have hpk : V.pOrd (k + 1) = V.primeList[k] := by
       rw [show V.pOrd (k + 1) = V.primeList.getD k 1 from rfl, List.getD_eq_getElem]
     have hmem : V.primeList[k] ∈ V.primeList := List.getElem_mem hc'
-    have h2 := (Nat.prime_of_mem_primeFactors (V.mem_primeList.mp hmem)).two_le
+    have h2 := (Nat.prime_of_mem_primeFactors (mem_primeList.mp hmem)).two_le
     rw [hpk] at h
     omega
   rw [show V.smallPrimes (k + 1) = (V.primeList.take (k + 1)).toFinset from rfl,
@@ -884,11 +886,11 @@ lemma LSet_succ_subset_of_dSet_zero (k Q' : ℕ)
     (hd0 : V.dSet (k + 1) (V.LSet (k + 1) Q') = 0) :
     V.LSet (k + 1) Q' ⊆ V.LSet k Q' := by
   intro L hL
-  have hLmem := (V.mem_LSet_iff (k + 1)).mp hL
+  have hLmem := mem_LSet_iff.mp hL
   have hle : L.factorization (V.pOrd (k + 1)) ≤ V.dSet (k + 1) (V.LSet (k + 1) Q') :=
     Finset.le_sup (f := fun s => s.factorization (V.pOrd (k + 1))) hL
   have hν0 : L.factorization (V.pOrd (k + 1)) = 0 := by omega
-  rw [V.mem_LSet_iff]
+  rw [mem_LSet_iff]
   refine ⟨hLmem.1, ?_⟩
   by_cases hph : 2 ≤ V.pOrd (k + 1)
   · rw [V.largePart_pred k hph L, hν0, pow_zero, one_mul, hLmem.2]
@@ -928,6 +930,7 @@ lemma pOrd_le_pOrd {j : ℕ} (hj1 : 1 ≤ j) (hjh : j ≤ h) (hph : 2 ≤ V.pOrd
   rw [V.pOrd_eq_getElem' hrj, V.pOrd_eq_getElem hph]
   exact (V.primeList_sortedLT.getElem_le_getElem_iff).mpr (by omega)
 
+variable {V} in
 /-- `q ∈ {p₁,…,p_h} ↔ q` is a prime factor of `n` with `q ≤ p_h` (for `h` in range). -/
 lemma mem_smallPrimes_iff (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) {q : ℕ} :
     q ∈ V.smallPrimes h ↔ q ∈ V.n.primeFactors ∧ q ≤ V.pOrd h := by
@@ -935,33 +938,34 @@ lemma mem_smallPrimes_iff (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) {q : ℕ} :
   have hrh : h - 1 < V.primeList.length := V.pOrd_range hph
   constructor
   · intro hq
-    refine ⟨V.mem_primeList.mp (List.mem_of_mem_take hq), ?_⟩
+    refine ⟨mem_primeList.mp (List.mem_of_mem_take hq), ?_⟩
     obtain ⟨j, hj, rfl⟩ := List.mem_iff_getElem.mp hq
     rw [List.length_take] at hj
     rw [List.getElem_take, V.pOrd_eq_getElem hph]
     exact (V.primeList_sortedLT.getElem_le_getElem_iff).mpr (by omega)
   · rintro ⟨hqn, hqle⟩
-    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.mp (V.mem_primeList.mpr hqn)
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.mp (mem_primeList.mpr hqn)
     rw [V.pOrd_eq_getElem hph] at hqle
     have hile : i ≤ h - 1 := (V.primeList_sortedLT.getElem_le_getElem_iff).mp hqle
     rw [List.mem_iff_getElem]
     exact ⟨i, by rw [List.length_take]; omega, by rw [List.getElem_take]⟩
 
+variable {V} in
 /-- `s ∈ 𝒜_h ↔ s ∈ S` and every prime of `s` is `≤ p_h` (for `h` in range). -/
 lemma mem_ASet_iff_le (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) {s : ℕ} :
     s ∈ V.ASet h ↔ s ∈ V.S ∧ ∀ p ∈ s.primeFactors, p ≤ V.pOrd h := by
   simp only [ASet, AP, Finset.mem_filter]
   constructor
   · rintro ⟨hsS, hsupp⟩
-    exact ⟨hsS, fun p hp => ((V.mem_smallPrimes_iff hh1 hph).mp (hsupp p hp)).2⟩
+    exact ⟨hsS, fun p hp => ((mem_smallPrimes_iff hh1 hph).mp (hsupp p hp)).2⟩
   · rintro ⟨hsS, hle⟩
-    refine ⟨hsS, fun p hp => (V.mem_smallPrimes_iff hh1 hph).mpr
+    refine ⟨hsS, fun p hp => (mem_smallPrimes_iff hh1 hph).mpr
       ⟨Nat.primeFactors_mono (V.sizes_dvd s hsS) V.n_pos.ne' hp, hle p hp⟩⟩
 
 /-- Every prime factor of `n` is `p_h` for some `h ≥ 1`. -/
 lemma exists_pOrd_eq {p : ℕ} (hp : p ∈ V.n.primeFactors) :
     ∃ h, 1 ≤ h ∧ V.pOrd h = p := by
-  obtain ⟨i, hi, hip⟩ := List.mem_iff_getElem.mp (V.mem_primeList.mpr hp)
+  obtain ⟨i, hi, hip⟩ := List.mem_iff_getElem.mp (mem_primeList.mpr hp)
   refine ⟨i + 1, by omega, ?_⟩
   rw [V.pOrd_eq_getElem' (by omega : i + 1 - 1 < V.primeList.length)]
   simpa using hip
@@ -972,7 +976,7 @@ lemma ASet_eq_S_of_length_le (hle : V.primeList.length ≤ h) : V.ASet h = V.S :
   apply Finset.filter_true_of_mem
   intro s hsS p hp
   rw [show V.smallPrimes h = (V.primeList.take h).toFinset from rfl, List.take_of_length_le hle,
-      List.mem_toFinset, V.mem_primeList]
+      List.mem_toFinset, mem_primeList]
   exact Nat.primeFactors_mono (V.sizes_dvd s hsS) V.n_pos.ne' hp
 
 /-! ### Theorem 3.7 infrastructure (Piece 3): the σ size-and-sum bound -/
@@ -980,7 +984,7 @@ lemma ASet_eq_S_of_length_le (hle : V.primeList.length ≤ h) : V.ASet h = V.S :
 /-- A small prime `q ∈ {p₁,…,p_h}` is `p_j` for some `1 ≤ j ≤ h`. -/
 lemma exists_pOrd_eq_of_mem_smallPrimes (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) {q : ℕ}
     (hq : q ∈ V.smallPrimes h) : ∃ j, 1 ≤ j ∧ j ≤ h ∧ V.pOrd j = q := by
-  obtain ⟨hqn, hqle⟩ := (V.mem_smallPrimes_iff hh1 hph).mp hq
+  obtain ⟨hqn, hqle⟩ := (mem_smallPrimes_iff hh1 hph).mp hq
   obtain ⟨j, hj1, hpj⟩ := V.exists_pOrd_eq hqn
   refine ⟨j, hj1, ?_, hpj⟩
   have h2j : 2 ≤ V.pOrd j := by rw [hpj]; exact (Nat.prime_of_mem_primeFactors hqn).two_le
@@ -999,11 +1003,12 @@ lemma sum_ASet_le_sigma (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) (D : �
   set M := ∏ q ∈ V.smallPrimes h, q ^ D with hM
   have hM0 : 0 < M := by
     rw [hM]; apply Finset.prod_pos; intro q hq
-    have hqpos : 0 < q := (Nat.prime_of_mem_primeFactors (V.smallPrimes_subset_primeFactors hq)).pos
+    have hqpos : 0 < q :=
+      (Nat.prime_of_mem_primeFactors (V.smallPrimes_subset_primeFactors hq)).pos
     exact pow_pos hqpos D
   apply sum_le_sigma_of_dvd _ M hM0
   intro s hsA
-  have hsmem := (V.mem_ASet_iff_le hh1 hph).mp hsA
+  have hsmem := (mem_ASet_iff_le hh1 hph).mp hsA
   have hs0 : s ≠ 0 := (V.sizes_pos s hsmem.1).ne'
   rw [← Nat.factorization_le_iff_dvd hs0 hM0.ne', Finsupp.le_def]
   intro q₀
@@ -1012,7 +1017,7 @@ lemma sum_ASet_le_sigma (h : ℕ) (hh1 : 1 ≤ h) (hph : 2 ≤ V.pOrd h) (D : �
     have hq0n : q₀ ∈ V.n.primeFactors :=
       Nat.primeFactors_mono (V.sizes_dvd s hsmem.1) V.n_pos.ne' hq0
     have hq0small : q₀ ∈ V.smallPrimes h :=
-      (V.mem_smallPrimes_iff hh1 hph).mpr ⟨hq0n, hsmem.2 q₀ hq0⟩
+      (mem_smallPrimes_iff hh1 hph).mpr ⟨hq0n, hsmem.2 q₀ hq0⟩
     obtain ⟨j, hj1, hjh, hpj⟩ := V.exists_pOrd_eq_of_mem_smallPrimes hh1 hph hq0small
     have hνs : s.factorization q₀ ≤ D := by
       rw [← hpj]
@@ -1040,7 +1045,7 @@ lemma largePart_le {j H : ℕ} (hj1 : 1 ≤ j) (hpj : 2 ≤ V.pOrd j) (hH1 : 1 �
     (hP : ∀ p, p.Prime → p ∣ K → p ≤ P)
     (hD : ∀ i, j < i → i ≤ H → V.dSet i (V.ASet H) ≤ D) :
     V.largePart j K ≤ (P ^ D) ^ H := by
-  have hKmem := (V.mem_ASet_iff_le hH1 hpH).mp hKA
+  have hKmem := (mem_ASet_iff_le hH1 hpH).mp hKA
   have hKS := hKmem.1
   have hKn : K ∣ V.n := V.sizes_dvd K hKS
   unfold largePart
@@ -1053,12 +1058,12 @@ lemma largePart_le {j H : ℕ} (hj1 : 1 ≤ j) (hpj : 2 ≤ V.pOrd j) (hH1 : 1 �
     have hqdvd := Nat.dvd_of_mem_primeFactors hqK
     have hqn : q ∈ V.n.primeFactors := Nat.primeFactors_mono hKn V.n_pos.ne' hqK
     have hqsmallH : q ∈ V.smallPrimes H :=
-      (V.mem_smallPrimes_iff hH1 hpH).mpr ⟨hqn, hKmem.2 q hqK⟩
+      (mem_smallPrimes_iff hH1 hpH).mpr ⟨hqn, hKmem.2 q hqK⟩
     obtain ⟨i, hi1, hiH, hpi⟩ := V.exists_pOrd_eq_of_mem_smallPrimes hH1 hpH hqsmallH
     have hij : j < i := by
       by_contra hc
-      push_neg at hc
-      exact hqj ((V.mem_smallPrimes_iff hj1 hpj).mpr ⟨hqn, hpi ▸ V.pOrd_le_pOrd hi1 hc hpj⟩)
+      rw [not_lt] at hc
+      exact hqj ((mem_smallPrimes_iff hj1 hpj).mpr ⟨hqn, hpi ▸ V.pOrd_le_pOrd hi1 hc hpj⟩)
     have hνq : K.factorization q ≤ D := by
       rw [← hpi]
       exact le_trans (Finset.le_sup (f := fun t => t.factorization (V.pOrd i)) hKA)
@@ -1069,7 +1074,7 @@ lemma largePart_le {j H : ℕ} (hj1 : 1 ≤ j) (hpj : 2 ≤ V.pOrd j) (hH1 : 1 �
   have hcard : A.card ≤ H := by
     calc A.card ≤ K.primeFactors.card := Finset.card_le_card (Finset.sdiff_subset)
       _ ≤ (V.smallPrimes H).card := Finset.card_le_card (fun q hq =>
-            (V.mem_smallPrimes_iff hH1 hpH).mpr ⟨Nat.primeFactors_mono hKn V.n_pos.ne' hq,
+            (mem_smallPrimes_iff hH1 hpH).mpr ⟨Nat.primeFactors_mono hKn V.n_pos.ne' hq,
               hKmem.2 q hq⟩)
       _ ≤ H := by
             rw [show V.smallPrimes H = (V.primeList.take H).toFinset from rfl]
@@ -1089,7 +1094,7 @@ lemma ASet_mono {j h : ℕ} (hjh : j ≤ h) : V.ASet j ⊆ V.ASet h := by
     index is `< N`.  (This is what makes `𝒜_{P_max} = S` without bounding `ℓ`.) -/
 lemma mem_smallPrimes_of_le {N q : ℕ} (hq : q ∈ V.n.primeFactors) (hqN : q ≤ N) :
     q ∈ V.smallPrimes N := by
-  obtain ⟨i, hi, hqi⟩ := List.mem_iff_getElem.mp (V.mem_primeList.mpr hq)
+  obtain ⟨i, hi, hqi⟩ := List.mem_iff_getElem.mp (mem_primeList.mpr hq)
   have hiN : i < N := by
     have hsub : (V.primeList.take (i + 1)).toFinset ⊆ Finset.Icc 2 N := by
       intro q' hq'
@@ -1099,7 +1104,7 @@ lemma mem_smallPrimes_of_le {N q : ℕ} (hq : q ∈ V.n.primeFactors) (hqN : q �
       rw [List.getElem_take] at hq'j
       rw [Finset.mem_Icc]
       have hq'p : q' ∈ V.n.primeFactors := by
-        rw [← hq'j]; exact V.mem_primeList.mp (List.getElem_mem _)
+        rw [← hq'j]; exact mem_primeList.mp (List.getElem_mem _)
       refine ⟨(Nat.prime_of_mem_primeFactors hq'p).two_le, ?_⟩
       calc q' = V.primeList[j] := hq'j.symm
         _ ≤ V.primeList[i] := (V.primeList_sortedLT.getElem_le_getElem_iff).mpr (by omega)
@@ -1214,7 +1219,7 @@ theorem bound_vh_odd (C : ℕ) :
   obtain ⟨s₀, hs₀L, hs₀d, hs₀min⟩ := sys.exists_divisionMinimal_maximal h hNE
   have hd1' : 1 ≤ s₀.factorization (sys.pOrd h) := by rw [hs₀d]; exact hd1
   obtain ⟨hNK, hνNK, hNKprimes⟩ := sys.NK_structure h hh1 hph hs₀L hQ hsupp
-  have hmem := (sys.mem_LSet_iff h).mp hs₀L
+  have hmem := ValidCosetPartition.mem_LSet_iff.mp hs₀L
   have hs₀0 : s₀ ≠ 0 := (sys.sizes_pos s₀ hmem.1).ne'
   have hQdvd : Q ∣ s₀ := by rw [← hmem.2]; exact sys.largePart_dvd h hs₀0
   have hNKpos : 0 < s₀ / Q := Nat.div_pos (Nat.le_of_dvd (by omega) hQdvd) (by omega)
@@ -1309,7 +1314,7 @@ lemma proper_div_aux (B_A : ℕ) : ∀ (k B : ℕ), ∃ C : ℕ,
       have hempty : sys.LSet (k + 1) 0 = ∅ := by
         rw [Finset.eq_empty_iff_forall_notMem]
         intro s hs
-        rw [sys.mem_LSet_iff] at hs
+        rw [ValidCosetPartition.mem_LSet_iff] at hs
         have hpos : 0 < sys.largePart (k + 1) s := by
           unfold ValidCosetPartition.largePart
           exact Finset.prod_pos fun q hq =>
@@ -1334,7 +1339,7 @@ lemma proper_div_aux (B_A : ℕ) : ∀ (k B : ℕ), ∃ C : ℕ,
           · rw [he] at hd; simp [ValidCosetPartition.dSet] at hd
           · exact hne
         obtain ⟨L, hL, hLd, _⟩ := sys.exists_mem_LSet_factorization_eq_dSet (k + 1) hNE
-        have hLmem := (sys.mem_LSet_iff (k + 1)).mp hL
+        have hLmem := ValidCosetPartition.mem_LSet_iff.mp hL
         have hph : 2 ≤ sys.pOrd (k + 1) := by
           have hpos : 0 < L.factorization (sys.pOrd (k + 1)) := by rw [hLd]; omega
           have hmem : sys.pOrd (k + 1) ∈ L.primeFactors := by
@@ -1357,7 +1362,8 @@ lemma proper_div_aux (B_A : ℕ) : ∀ (k B : ℕ), ∃ C : ℕ,
           calc Q'.properDivisors.card ≤ (Finset.range Q').card := Finset.card_le_card hsub
             _ = Q' := Finset.card_range Q'
             _ ≤ B + 1 := hQ'
-        have htail : (∑ Q'' ∈ Q'.properDivisors, (sys.LSet (k + 1) Q'').sum id) ≤ (B + 1) * C' := by
+        have htail :
+            (∑ Q'' ∈ Q'.properDivisors, (sys.LSet (k + 1) Q'').sum id) ≤ (B + 1) * C' := by
           calc (∑ Q'' ∈ Q'.properDivisors, (sys.LSet (k + 1) Q'').sum id)
               ≤ ∑ _Q'' ∈ Q'.properDivisors, C' := Finset.sum_le_sum fun Q'' hQ'' =>
                   hC' sys Q'' (by have := (Nat.mem_properDivisors.mp hQ'').2; omega) hA
@@ -1430,7 +1436,7 @@ bounded, hence the number of prime levels is finite and bounded.
     gives ∑_{D(s₀)} ≥ s₀, and since the tail is 0, we get s₀ ≤ σ(s₀/p) + (m-1).
     The divisor-sum inequality then bounds p.
 -/
-theorem prime_bound (m : ℕ) (hm : 2 ≤ m) :
+theorem prime_bound (m : ℕ) :
     ∃ P_max : ℕ, ∀ (sys : ValidCosetPartition m),
       ∀ s ∈ sys.S, ∀ p : ℕ, p.Prime → p ∣ s → p ≤ P_max := by
   -- **Piece 1.** Apply Lemma 3.5 (`bound_vh_general`) with `Q = 1` (empty tail, so
@@ -1451,7 +1457,7 @@ theorem prime_bound (m : ℕ) (hm : 2 ≤ m) :
   obtain ⟨h, hh1, hPs_eq⟩ := sys.exists_pOrd_eq hPs_n
   have hph : 2 ≤ sys.pOrd h := by rw [hPs_eq]; exact hPs_prime.two_le
   have hsA : s ∈ sys.ASet h := by
-    rw [sys.mem_ASet_iff_le hh1 hph]
+    rw [ValidCosetPartition.mem_ASet_iff_le hh1 hph]
     exact ⟨hsS, fun q hq => hPs_eq ▸ Finset.le_max' _ q hq⟩
   have hLSet1 : sys.LSet h 1 = sys.ASet h := (sys.ASet_eq_LSet_one h).symm
   have hsL : s ∈ sys.LSet h 1 := by rw [hLSet1]; exact hsA
@@ -1535,7 +1541,7 @@ lemma dSet_ASet_bound (H : ℕ) (hH1 : 1 ≤ H) (P : ℕ) (hP1 : 1 ≤ P)
           have hpjmem : sys.pOrd j ∈ K.primeFactors := by
             rw [← Nat.support_factorization, Finsupp.mem_support_iff, ← hKeq]; omega
           have hpj2 : 2 ≤ sys.pOrd j := (Nat.prime_of_mem_primeFactors hpjmem).two_le
-          have hKS := ((sys.mem_ASet_iff_le hH1 hpH).mp hKA).1
+          have hKS := ((ValidCosetPartition.mem_ASet_iff_le hH1 hpH).mp hKA).1
           set Q := sys.largePart j K with hQdef
           have hQpos : 0 < Q := by
             rw [hQdef]; unfold ValidCosetPartition.largePart; apply Finset.prod_pos
@@ -1573,7 +1579,7 @@ lemma dSet_ASet_bound (H : ℕ) (hH1 : 1 ≤ H) (P : ℕ) (hP1 : 1 ≤ P)
     the sum `∑_{𝒜_H}`.  Outer induction on `H`; the collapse cases (`p_H` out of
     range, or `d_H(𝒜_H) = 0`) reduce to the IH, while the real-work case uses the
     descending bound (2d) and the σ finish (Piece 3). -/
-theorem ASet_combined_bound (hm : 2 ≤ m) : ∀ H, ∃ B, ∀ (sys : ValidCosetPartition m),
+theorem ASet_combined_bound : ∀ H, ∃ B, ∀ (sys : ValidCosetPartition m),
     (∀ j, 1 ≤ j → j ≤ H → sys.dSet j (sys.ASet H) ≤ B) ∧ (sys.ASet H).sum id ≤ B := by
   intro H
   induction H with
@@ -1592,7 +1598,7 @@ theorem ASet_combined_bound (hm : 2 ≤ m) : ∀ H, ∃ B, ∀ (sys : ValidCoset
     rw [hempty, Finset.sum_empty]
   | succ h ih =>
     obtain ⟨B_h, hB_h⟩ := ih
-    obtain ⟨P0, hP0⟩ := prime_bound m hm
+    obtain ⟨P0, hP0⟩ := prime_bound m
     set P := max P0 1 with hPdef
     have hP1 : 1 ≤ P := le_max_right _ _
     have hP : ∀ (sys : ValidCosetPartition m), ∀ s ∈ sys.S, ∀ p, p.Prime → p ∣ s → p ≤ P :=
@@ -1615,15 +1621,17 @@ theorem ASet_combined_bound (hm : 2 ≤ m) : ∀ H, ∃ B, ∀ (sys : ValidCoset
       have hppH_le : sys.pOrd (h + 1) ≤ P := by
         have hpmem : sys.pOrd (h + 1) ∈ K.primeFactors := by
           rw [← Nat.support_factorization, Finsupp.mem_support_iff, ← hKeq]; omega
-        exact hP sys K (((sys.mem_ASet_iff_le (by omega) hpH).mp hKA).1) (sys.pOrd (h + 1))
-          (Nat.prime_of_mem_primeFactors hpmem) (Nat.dvd_of_mem_primeFactors hpmem)
+        exact hP sys K (((ValidCosetPartition.mem_ASet_iff_le (by omega) hpH).mp hKA).1)
+          (sys.pOrd (h + 1)) (Nat.prime_of_mem_primeFactors hpmem)
+          (Nat.dvd_of_mem_primeFactors hpmem)
       refine ⟨fun j hj1 hjH =>
         le_trans (hD sys hpH j hj1 hjH) (le_trans (le_max_right _ _) (le_max_left _ _)), ?_⟩
       have hMbound : (∏ q ∈ sys.smallPrimes (h + 1), q ^ D) ≤ (P ^ D) ^ (h + 1) := by
         calc ∏ q ∈ sys.smallPrimes (h + 1), q ^ D
             ≤ ∏ q ∈ sys.smallPrimes (h + 1), P ^ D :=
               Finset.prod_le_prod' (fun q hq => Nat.pow_le_pow_left
-                (le_trans ((sys.mem_smallPrimes_iff (by omega) hpH).mp hq).2 hppH_le) D)
+                (le_trans ((ValidCosetPartition.mem_smallPrimes_iff (by omega) hpH).mp hq).2
+                  hppH_le) D)
           _ = (P ^ D) ^ (sys.smallPrimes (h + 1)).card := by rw [Finset.prod_const]
           _ ≤ (P ^ D) ^ (h + 1) := Nat.pow_le_pow_right (Nat.one_le_pow _ _ hP1) (by
                 rw [show sys.smallPrimes (h + 1) = (sys.primeList.take (h + 1)).toFinset from rfl]
@@ -1672,10 +1680,10 @@ theorem ASet_combined_bound (hm : 2 ≤ m) : ∀ H, ∃ B, ∀ (sys : ValidCoset
     `H = P_max` (the uniform prime bound) in Theorem 3.7, every size's primes are
     `≤ P_max` hence among the first `P_max` primes, so `𝒜_{P_max} = S`; then
     `n = ∑_S + m ≤ B + m`. -/
-theorem finiteness_main (m : ℕ) (hm : 2 ≤ m) :
+theorem finiteness_main (m : ℕ) :
     ∃ N, ∀ (sys : ValidCosetPartition m), sys.n ≤ N := by
-  obtain ⟨P_max, hP⟩ := prime_bound m hm
-  obtain ⟨B, hB⟩ := ASet_combined_bound (m := m) hm P_max
+  obtain ⟨P_max, hP⟩ := prime_bound m
+  obtain ⟨B, hB⟩ := ASet_combined_bound (m := m) P_max
   refine ⟨B + m, fun sys => ?_⟩
   have hAS : sys.ASet P_max = sys.S := by
     rw [show sys.ASet P_max
@@ -1687,90 +1695,5 @@ theorem finiteness_main (m : ℕ) (hm : 2 ≤ m) :
       (hP sys s hsS p (Nat.prime_of_mem_primeFactors hp) (Nat.dvd_of_mem_primeFactors hp))
   have hsum : (sys.S).sum id ≤ B := hAS ▸ (hB sys).2
   rw [← sys.sum_eq]; omega
-
-/-
-**Lemma (Valuation bound)**: For any valid system, every p-adic valuation
-    of any size in S is bounded by a constant depending only on m.
-
-    Proof: Since p is bounded (by prime_bound), and the divisor-sum inequality
-    bounds p^e when N − σ(N/p) ≤ C₀, we get e bounded.
--/
-theorem valuation_bound (m : ℕ) (hm : 2 ≤ m) :
-    ∃ V_max : ℕ, ∀ (sys : ValidCosetPartition m),
-      ∀ s ∈ sys.S, ∀ p : ℕ, p.Prime → p ∣ s → s.factorization p ≤ V_max := by
-  -- By size_bound, there exists S_max such that for any valid system sys, any size s in sys.S, s ≤ S_max.
-  obtain ⟨S_max, hS_max⟩ : ∃ S_max, ∀ (sys : ValidCosetPartition m), ∀ s ∈ sys.S, s ≤ S_max := by
-    obtain ⟨ N, hN ⟩ := finiteness_main m hm;
-    exact ⟨ N, fun sys s hs => le_trans ( Nat.le_of_dvd ( by linarith [ sys.n_pos ] ) ( sys.sizes_dvd s hs ) ) ( hN sys ) ⟩;
-  exact ⟨ S_max, fun sys s hs p hp hps => le_trans ( Nat.le_of_lt ( Nat.factorization_lt _ ( by linarith [ DCS.ValidCosetPartition.sizes_gt_one sys s hs ] ) ) ) ( hS_max sys s hs ) ⟩
-
-/-
-**Lemma (Size bound)**: All sizes are bounded by a constant depending only on m.
-
-    Proof: Every size s divides ∏_{p | s} p^{ν_p(s)} ≤ ∏_{p ≤ P_max} p^{V_max},
-    which is bounded.
--/
-theorem size_bound (m : ℕ) (hm : 2 ≤ m) :
-    ∃ S_max : ℕ, ∀ (sys : ValidCosetPartition m), ∀ s ∈ sys.S, s ≤ S_max := by
-  -- From prime_bound and valuation_bound, every size has bounded factorization
-  obtain ⟨P_max, hP⟩ := prime_bound m hm
-  obtain ⟨V_max, hV⟩ := valuation_bound m hm
-  -- Every size divides M := ∏_{p ≤ P_max, p prime} p^V_max
-  -- M is bounded (it depends only on P_max and V_max, hence on m)
-  -- So every size ≤ M
-  -- By combining the bounds on primes and valuations, we can bound the product.
-  have h_prod_bound : ∃ B : ℕ, ∀ (sys : ValidCosetPartition m), ∀ s ∈ sys.S, s ≤ B := by
-    have h_prod_bound_step : ∀ (sys : ValidCosetPartition m), ∀ s ∈ sys.S, s ≤ (∏ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 P_max), p ^ V_max) := by
-      intros sys s hs
-      have h_prod : s ∣ ∏ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 P_max), p ^ (s.factorization p) := by
-        conv_lhs => rw [ ← Nat.factorization_prod_pow_eq_self ( show s ≠ 0 by linarith [ sys.sizes_gt_one s hs ] ) ] ;
-        apply Finset.prod_dvd_prod_of_subset;
-        exact fun p hp => Finset.mem_filter.mpr ⟨ Finset.mem_Icc.mpr ⟨ Nat.Prime.two_le ( Nat.prime_of_mem_primeFactors hp ), hP sys s hs p ( Nat.prime_of_mem_primeFactors hp ) ( Nat.dvd_of_mem_primeFactors hp ) ⟩, Nat.prime_of_mem_primeFactors hp ⟩;
-      refine Nat.le_trans ( Nat.le_of_dvd ( Finset.prod_pos fun p hp => pow_pos ( Nat.Prime.pos ( by aesop ) ) _ ) h_prod ) ?_;
-      exact Finset.prod_le_prod' fun p hp => Nat.pow_le_pow_right ( by linarith [ Finset.mem_Icc.mp ( Finset.mem_filter.mp hp |>.1 ) ] ) ( if h : p ∣ s then hV sys s hs p ( Finset.mem_filter.mp hp |>.2 ) h else by rw [ Nat.factorization_eq_zero_of_not_dvd h ] ; norm_num )
-    exact ⟨ _, h_prod_bound_step ⟩;
-  exact h_prod_bound
-
-/-
-**Corollary (Cardinality bound)**: |S| is bounded by a constant depending
-    only on m. Since each size > 1 is distinct and divides some bounded M,
-    |S| ≤ number of divisors of M.
--/
-theorem card_S_bound (m : ℕ) (hm : 2 ≤ m) :
-    ∃ C_max : ℕ, ∀ (sys : ValidCosetPartition m), sys.S.card ≤ C_max := by
-  obtain ⟨S_max, hS⟩ := size_bound m hm
-  use S_max;
-  intro sys;
-  exact le_trans ( Finset.card_le_card fun x hx => Finset.mem_Icc.mpr ⟨ Nat.succ_le_of_lt ( sys.sizes_gt_one x hx ), hS sys x hx ⟩ ) ( by simp )
-
-/-- **Theorem 3.7**: ∑_{𝒜_P} is bounded for all P. -/
-theorem sumAP_bounded_main (m : ℕ) (hm : 2 ≤ m) :
-    ∃ B : ℕ, ∀ (sys : ValidCosetPartition m) (P : Finset ℕ), sys.sumAP P ≤ B := by
-  -- Since every size is bounded by S_max, and the number of sizes is bounded
-  -- by C_max, we get ∑ sizes ≤ S_max * C_max, hence sumAP ≤ S_max * C_max + m.
-  obtain ⟨S_max, hS⟩ := size_bound m hm
-  obtain ⟨C_max, hC⟩ := card_S_bound m hm
-  use S_max * C_max + m
-  intro sys P
-  unfold ValidCosetPartition.sumAP ValidCosetPartition.AP
-  have h1 : (sys.S.filter (IsSupportedOn · P)).sum id ≤ sys.S.sum id := by
-    exact Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)
-  have h2 : sys.S.sum id ≤ S_max * sys.S.card := by
-    calc sys.S.sum id
-        ≤ sys.S.sum (fun _ => S_max) := Finset.sum_le_sum (fun s hs => hS sys s hs)
-      _ = S_max * sys.S.card := by simp [Finset.sum_const, smul_eq_mul, mul_comm]
-  have h3 : sys.S.card ≤ C_max := hC sys
-  calc (sys.S.filter (IsSupportedOn · P)).sum id + m
-      ≤ sys.S.sum id + m := by omega
-    _ ≤ S_max * sys.S.card + m := by omega
-    _ ≤ S_max * C_max + m := by nlinarith
-
-/-! ### Main finiteness theorem -/
-
-/-- **Corollary 3.8 / Theorem 1.2**: n is bounded by a constant depending only on m. -/
-theorem main_finiteness (m : ℕ) (hm : 2 ≤ m) :
-    ∃ N : ℕ, ∀ (sys : ValidCosetPartition m), sys.n ≤ N := by
-  obtain ⟨B, hB⟩ := sumAP_bounded_main m hm
-  exact ⟨B, fun sys => sys.sumAP_all ▸ hB sys sys.n.primeFactors⟩
 
 end DCS

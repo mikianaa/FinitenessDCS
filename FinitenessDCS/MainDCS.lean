@@ -81,7 +81,7 @@ def ArithProg.toCoset (ap : ArithProg) (hdvd : ap.modulus ∣ n) (hpos : 0 < ap.
   modulus_pos := hpos
 
 /-- Membership in a coset via the projection `ZMod n → ZMod modulus`. -/
-lemma Coset.mem_iff_castHom [NeZero n] (K : Coset n) (y : ZMod n) :
+lemma Coset.mem_iff_castHom [NeZero n] {K : Coset n} {y : ZMod n} :
     y ∈ K ↔ ZMod.castHom K.modulus_dvd (ZMod K.modulus) y
           = ZMod.castHom K.modulus_dvd (ZMod K.modulus) K.residue := by
   haveI : NeZero K.modulus := ⟨K.modulus_pos.ne'⟩
@@ -93,8 +93,8 @@ lemma Coset.mem_iff_castHom [NeZero n] (K : Coset n) (y : ZMod n) :
 
 /-- **Membership correspondence.**  An integer `x` lies in the progression `ap` iff
     its reduction `x mod n` lies in the coset `ap.toCoset`. -/
-lemma ArithProg.mem_toCoset_iff (ap : ArithProg) (hdvd : ap.modulus ∣ n) (hpos : 0 < ap.modulus)
-    (hn : 0 < n) (x : ℤ) :
+lemma ArithProg.mem_toCoset_iff {ap : ArithProg} (hdvd : ap.modulus ∣ n) (hpos : 0 < ap.modulus)
+    (hn : 0 < n) {x : ℤ} :
     (↑x : ZMod n) ∈ ap.toCoset hdvd hpos ↔ ap.Mem x := by
   haveI : NeZero n := ⟨hn.ne'⟩
   rw [Coset.mem_iff_castHom]
@@ -135,6 +135,7 @@ variable (D : DCSystem)
 noncomputable def cosetList (n : ℕ) : List (Coset n) :=
   D.progs.toList.map (fun ap => ap.toCosetTotal n)
 
+variable {D} in
 lemma mem_cosetList {K : Coset n} :
     K ∈ D.cosetList n ↔ ∃ ap ∈ D.progs, ap.toCosetTotal n = K := by
   rw [cosetList, List.mem_map]
@@ -166,13 +167,14 @@ lemma cosetList_cover (hn : 0 < n) (hdvd : ∀ ap ∈ D.progs, ap.modulus ∣ n)
   haveI : NeZero n := ⟨hn.ne'⟩
   have hy : ((y.val : ℤ) : ZMod n) = y := intCast_val_cast y
   obtain ⟨ap, ⟨hap, hapMem⟩, huniq⟩ := D.covers (y.val : ℤ)
-  refine ⟨ap.toCosetTotal n, ⟨D.mem_cosetList.mpr ⟨ap, hap, rfl⟩, ?_⟩, ?_⟩
+  refine ⟨ap.toCosetTotal n, ⟨mem_cosetList.mpr ⟨ap, hap, rfl⟩, ?_⟩, ?_⟩
   · rw [ap.toCosetTotal_eq (hdvd ap hap) (D.valid ap hap).1, ← hy]
-    exact (ap.mem_toCoset_iff (hdvd ap hap) (D.valid ap hap).1 hn (y.val : ℤ)).mpr hapMem
+    exact (ArithProg.mem_toCoset_iff (hdvd ap hap) (D.valid ap hap).1 hn
+      (x := (y.val : ℤ))).mpr hapMem
   · rintro K ⟨hK, hyK⟩
-    obtain ⟨ap', hap', rfl⟩ := D.mem_cosetList.mp hK
+    obtain ⟨ap', hap', rfl⟩ := mem_cosetList.mp hK
     rw [ap'.toCosetTotal_eq (hdvd ap' hap') (D.valid ap' hap').1, ← hy,
-        ap'.mem_toCoset_iff (hdvd ap' hap') (D.valid ap' hap').1 hn] at hyK
+        ArithProg.mem_toCoset_iff (hdvd ap' hap') (D.valid ap' hap').1 hn] at hyK
     rw [huniq ap' ⟨hap', hyK⟩]
 
 /-- The reduced coset sizes sum to `n` (disjoint-cover counting). -/
@@ -201,7 +203,7 @@ lemma cosetList_partition (hn : 0 < n) (hdvd : ∀ ap ∈ D.progs, ap.modulus �
     apply Finset.sum_congr rfl
     intro K hK
     rw [List.mem_toFinset] at hK
-    obtain ⟨ap, hap, rfl⟩ := D.mem_cosetList.mp hK
+    obtain ⟨ap, hap, rfl⟩ := mem_cosetList.mp hK
     rw [ap.toCosetTotal_eq (hdvd ap hap) (D.valid ap hap).1, hS,
         ap.toCoset_card (hdvd ap hap) (D.valid ap hap).1 hn]
   rw [hcard, ← Finset.card_biUnion hdisj, ← hbu, Finset.card_univ, ZMod.card]
@@ -277,15 +279,15 @@ noncomputable def toValidCosetPartition {m : ℕ} (hD : D.Basicas m) : ValidCose
         Finset.filter_val]
   · -- hsizes_le : ∀ K ∈ cosets, 3 * size ≤ M
     intro K hK
-    obtain ⟨ap, hap, rfl⟩ := D.mem_cosetList.mp hK
+    obtain ⟨ap, hap, rfl⟩ := mem_cosetList.mp hK
     rw [hsize ap hap]
     calc 3 * (M / ap.modulus)
         ≤ ap.modulus * (M / ap.modulus) := Nat.mul_le_mul_right _ (h3 ap hap)
       _ = M := Nat.mul_div_cancel' (hdvd ap hap)
   · -- hdistinct : non-singleton sizes are distinct
     intro K₁ K₂ hK₁ hK₂ hsizeeq hsize1
-    obtain ⟨ap₁, hap₁, rfl⟩ := D.mem_cosetList.mp hK₁
-    obtain ⟨ap₂, hap₂, rfl⟩ := D.mem_cosetList.mp hK₂
+    obtain ⟨ap₁, hap₁, rfl⟩ := mem_cosetList.mp hK₁
+    obtain ⟨ap₂, hap₂, rfl⟩ := mem_cosetList.mp hK₂
     rw [hsize ap₁ hap₁, hsize ap₂ hap₂] at hsizeeq
     rw [hsize ap₁ hap₁] at hsize1
     have hmodeq : ap₁.modulus = ap₂.modulus := by
@@ -304,9 +306,9 @@ end DCSystem
     is bounded by a constant `N` depending only on `m`.  (Apply `finiteness_main` to
     the reduced `ValidCosetPartition m`, whose `n` is the top modulus `M`; every
     modulus is `≤ M = n ≤ N`.) -/
-theorem modulus_bound (m : ℕ) (hm : 2 ≤ m) :
+theorem modulus_bound (m : ℕ) :
     ∃ N, ∀ (D : DCSystem), D.Basicas m → ∀ ap ∈ D.progs, ap.modulus ≤ N := by
-  obtain ⟨N, hN⟩ := finiteness_main m hm
+  obtain ⟨N, hN⟩ := finiteness_main m
   refine ⟨N, fun D hD ap hap => ?_⟩
   have hle : ap.modulus ≤ (D.toValidCosetPartition hD).n := by
     obtain ⟨hm', h3, hM⟩ := hD
@@ -323,9 +325,9 @@ theorem modulus_bound (m : ℕ) (hm : 2 ≤ m) :
     set `B` of arithmetic progressions with `modulus, residue ≤ N`.  A DCS is
     determined by its `progs` (the `valid`/`covers` fields are `Prop`s), so the map
     `D ↦ D.progs` injects `{D | D.Basicas m}` into the finite powerset of `B`. -/
-theorem main_dcs (m : ℕ) (hm : 2 ≤ m) :
+theorem main_dcs (m : ℕ) :
     { D : DCSystem | D.Basicas m }.Finite := by
-  obtain ⟨N, hN⟩ := modulus_bound m hm
+  obtain ⟨N, hN⟩ := modulus_bound m
   -- finite set of bounded arithmetic progressions (modulus, residue ≤ N)
   set B : Finset ArithProg :=
     (Finset.range (N + 1) ×ˢ Finset.range (N + 1)).image

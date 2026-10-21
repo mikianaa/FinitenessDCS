@@ -88,7 +88,7 @@ lemma geom_sum_eq_zero_of_pow_eq_one {w : ℂ} {L : ℕ} (hw : w ^ L = 1) (hw1 :
 
 /-- For a *valid* progression, membership of a natural number is just a congruence
     of remainders: `x ∈ ap ↔ x % modulus = residue`. -/
-lemma ArithProg.mem_natCast_iff {ap : ArithProg} (h : ap.Valid) (x : ℕ) :
+lemma ArithProg.mem_natCast_iff {ap : ArithProg} (h : ap.Valid) {x : ℕ} :
     ap.Mem (x : ℤ) ↔ x % ap.modulus = ap.residue := by
   have hmod : ap.Mem (x : ℤ) ↔ ap.residue ≡ x [MOD ap.modulus] := by
     rw [Nat.modEq_iff_dvd]; exact Iff.rfl
@@ -128,7 +128,8 @@ lemma sum_pow_over_class (ζ : ℂ) {m r N : ℕ} (hm : 0 < m) (hr : r < m) (hdv
     ∑ x ∈ (range N).filter (fun x => x % m = r), ζ ^ x
       = ζ ^ r * ∑ j ∈ range (N / m), (ζ ^ m) ^ j := by
   rw [range_filter_mod_eq_image hm hr hdvd]
-  rw [Finset.sum_image (fun a _ b _ hab => Nat.eq_of_mul_eq_mul_right hm (Nat.add_left_cancel hab))]
+  rw [Finset.sum_image
+    (fun a _ b _ hab => Nat.eq_of_mul_eq_mul_right hm (Nat.add_left_cancel hab))]
   rw [Finset.mul_sum]
   exact Finset.sum_congr rfl fun j _ => by rw [pow_add, pow_mul']
 
@@ -152,9 +153,9 @@ lemma DCSystem.sum_range_eq_sum_progs (D : DCSystem) (N : ℕ) (f : ℕ → ℂ)
     refine Finset.filter_congr fun x _ => ?_
     constructor
     · intro hgx
-      exact (ArithProg.mem_natCast_iff (D.valid ap hap) x).mp (hgx ▸ (hmem x).2)
+      exact (ArithProg.mem_natCast_iff (x := x) (D.valid ap hap)).mp (hgx ▸ (hmem x).2)
     · intro hx
-      exact (huniq x ap hap ((ArithProg.mem_natCast_iff (D.valid ap hap) x).mpr hx)).symm
+      exact (huniq x ap hap ((ArithProg.mem_natCast_iff (x := x) (D.valid ap hap)).mpr hx)).symm
   rw [hfeq]
 
 /-! ### The divisibility condition -/
