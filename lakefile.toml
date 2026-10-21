@@ -7,6 +7,8 @@ defaultTargets = ["FinitenessDCS"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
+# Not a Mathlib file tree: skip the copyright-header check.
+weak.linter.style.header = false
 maxSynthPendingDepth = 3
 
 [[require]]
@@ -16,3 +18,7 @@ rev = "v4.30.0"
 
 [[lean_lib]]
 name = "FinitenessDCS"
+
+# `lake build Lint` runs the environment linters and the axiom check (see `Lint.lean`).
+[[lean_lib]]
+name = "Lint"
